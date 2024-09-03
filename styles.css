@@ -105,8 +105,22 @@ main:active {
     scale: 1.1;
 }
 
+.person__image_wrapper {
+    position: relative;
+}
+
 .person__image {
     max-height: 10ch;
+    border-radius: .5rem;
+}
+
+.person__image_count {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding-inline: .25rem;
+    border-radius: 50% 0 0 0;
+    background-color: lightgray;
 }
 
 .partner > .person {

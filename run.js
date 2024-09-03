@@ -148,7 +148,21 @@ const rebuild = (() => {
                 `
                 : '';
 
-            const img = prsn.images?.length ? `<img src=${prsn.images[prsn.images.length - 1]} class='person__image'></img>` : '';
+            const img_count = prsn.images?.length;
+            const img = img_count
+                ? `
+                    <div class='person__image_wrapper'>
+                        <img
+                            src='${prsn.images[prsn.images.length - 1]}'
+                            class='person__image'>
+                        </img>
+                        ${(img_count > 1)
+                            ? `<div class='person__image_count'>${img_count}</div>`
+                            : ''
+                        }
+                    </div>
+                    `
+                : '';
             const dts = (prsn.dob || prsn.dod)
                 ? `
                     <small
