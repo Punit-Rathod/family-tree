@@ -148,7 +148,7 @@ const rebuild = (() => {
                 `
                 : '';
 
-            const img = prsn.images ? `<img src=${prsn.images[0]} class='person__image'></img>` : '';
+            const img = prsn.images?.length ? `<img src=${prsn.images[prsn.images.length - 1]} class='person__image'></img>` : '';
             const dts = (prsn.dob || prsn.dod)
                 ? `
                     <small
@@ -381,7 +381,7 @@ const dataChanges = (() => {
                     >`
 
             return `
-                <label class='${type === 'hidden' ? `--hide` : 'edit_person__field'}'>
+                <label class='${type === 'hidden' ? '--hide' : 'edit_person__field'}'>
                     ${label}
                     ${input}
                 </label>
@@ -415,23 +415,45 @@ const dataChanges = (() => {
         resetChanges();
     };
 
+    const modifyStoredImages = func => {
+        const prsn = ALL_PEOPLE.get(getFormData().id);
+        if (!prsn) return;
+        changeLog.set('id', prsn.id);
+        const imgs = (
+            changeLog.get('images')
+            || (
+                prsn.images
+                && [...prsn.images]
+            )
+            || []
+        );
+        func(imgs);
+        changeLog.set('images', imgs);
+    };
+
     const addImage = ev => {
         const file = ev.target.files[0];
         const reader = new FileReader();
         reader.onload = () => {
             const src = reader.result;
-            const prsn = ALL_PEOPLE.get(getFormData().id);
-            if (!prsn);
-            changeLog.set('id', prsn.id);
-            const imgs = prsn.images ? [...prsn.images] : [];
-            imgs.unshift(src);
-            changeLog.set('images', imgs);
+            modifyStoredImages(imgs => imgs.push(src));
             document.querySelector('.edit_person__images').insertAdjacentHTML(
-                'afterbegin',
+                'beforeend',
                 makeImageElement(src),
             );
         };
         reader.readAsDataURL(file);
+    };
+
+    const deleteImage = ev => {
+        if (!ev.target.closest('.edit_person__delete_image')) return;
+        const elToRemove = ev.target.closest('.edit_person__image_wrapper');
+        const delInd = [
+            ...ev.target.closest('.edit_person__images').querySelectorAll('.edit_person__image_wrapper')
+        ].indexOf(elToRemove);
+        if (delInd < 0) return;
+        modifyStoredImages(imgs => imgs.splice(delInd, 1));
+        elToRemove.remove();
     };
 
     document.querySelector('.tree').addEventListener('click', ev => {
@@ -447,7 +469,8 @@ const dataChanges = (() => {
 
     document.getElementById('id_form_edit_person').addEventListener('change', logChange);
     document.getElementById('id_button_edit_person_save').addEventListener('click', save);
-    document.getElementById('id_input_upload_image').addEventListener('input', addImage);
+    document.getElementById('id_input_add_image').addEventListener('input', addImage);
+    document.querySelector('.edit_person__images').addEventListener('click', deleteImage);
 
 })();
 

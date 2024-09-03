@@ -158,6 +158,10 @@ main:active {
     gap: 1rem;
 }
 
+.edit_person__image_wrapper {
+    margin: auto;
+}
+
 .edit_person__image_wrapper:focus-within {
     --image_max_height: 70vh;
     --image_controls_display: block;
@@ -166,7 +170,6 @@ main:active {
 .edit_person__image {
     max-height: var(--image_max_height, 10ch);
     transition: max-height .2s;
-    margin: auto;
 }
 
 .edit_person__delete_image {
