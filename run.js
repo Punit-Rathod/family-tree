@@ -2,62 +2,7 @@
 const ALL_PEOPLE = new Map();
 
 
-const parseImport = async ev => {
-
-    const parseCSV = txt => {
-
-        const csvToArray = text => {
-            let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0, l;
-            for (l of text) {
-                if ('"' === l) {
-                    if (s && l === p) row[i] += l;
-                    s = !s;
-                }
-                else if (',' === l && s) l = row[++i] = '';
-                else if ('\n' === l && s) {
-                    if ('\r' === p) row[i] = row[i].slice(0, -1);
-                    row = ret[++r] = [l = '']; i = 0;
-                } else row[i] += l;
-                p = l;
-            }
-            return ret;
-        };
-
-        const grid = csvToArray(txt);
-        const rows = grid.filter(row => row.join('').length > 1); //Remove blank rows
-        const fields = rows.shift();
-        return rows.map(
-            row => Object.fromEntries(
-                fields.map((key, idx) => [key, row[idx]])
-            )
-        );
-
-    };
-
-    const file = ev.target.files[0];
-    const split_file_name = file.name.split('.');
-
-    const parser = {
-        json: JSON.parse,
-        csv: parseCSV,
-    }[split_file_name[split_file_name.length - 1]];
-
-    if (!parser) {
-        prompt('Invalid file type');
-        return;
-    };
-
-    const reader = new FileReader();
-    reader.readAsText(file);
-    reader.onload = e => {
-        rebuild(parser(e.target.result));
-        ev.target.value = '';
-    };
-};
-
-
 const rebuild = (() => {
-
 
     const buildMap = tree => {
         ALL_PEOPLE.clear();
@@ -277,14 +222,55 @@ const rebuild = (() => {
         buildTree(tree, ALL_PEOPLE);
         renderTree(tree, ALL_PEOPLE);
         changeView.searchPerson();
-        localStorage.setItem('tree', JSON.stringify([...ALL_PEOPLE.values()]));
+        localStorage.setItem(
+            'data',
+            JSON.stringify(
+                [...ALL_PEOPLE.values()]
+            )
+        );
     };
 
 })();
 
+
 const changeView = (() => {
 
     const CLSS_HIGHLIGHT = '--highlight';
+
+    (() => {
+        let mouseDown = false;
+        let startX, startY, scrollLeft, scrollTop;
+        const slider = document.querySelector('main');
+
+        const startDragging = ev => {
+            mouseDown = true;
+            startX = ev.pageX - slider.offsetLeft;
+            startY = ev.pageY - slider.offsetTop;
+            scrollLeft = slider.scrollLeft;
+            scrollTop = slider.scrollTop;
+        };
+
+        const stopDragging = () => {
+            mouseDown = false;
+        };
+
+        const move = ev => {
+            ev.preventDefault();
+            if(!mouseDown) { return; }
+            const x = ev.pageX - slider.offsetLeft;
+            const y = ev.pageY - slider.offsetTop;
+            const scrollX = x - startX;
+            const scrollY = y - startY;
+            slider.scrollLeft = scrollLeft - scrollX;
+            slider.scrollTop = scrollTop - scrollY;
+        };
+
+        // Add the event listeners
+        slider.addEventListener('mousemove', move, false);
+        slider.addEventListener('mousedown', startDragging, false);
+        slider.addEventListener('mouseup', stopDragging, false);
+        slider.addEventListener('mouseleave', stopDragging, false);
+    })();
 
     const searchPerson = () => {
         document.querySelectorAll(`.${CLSS_HIGHLIGHT}`).forEach(el => el.classList.remove(CLSS_HIGHLIGHT));
@@ -308,7 +294,11 @@ const changeView = (() => {
                 el = el.parentNode;
             };
         });
-        els[0]?.scrollIntoView({behavior: 'smooth'});
+        els[0]?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'center',
+        });
     };
 
     const toggleHideAll = ev => {
@@ -344,59 +334,58 @@ const escapeValue = (val, is_input=false) => {
     return is_input ? initial : initial.replace(/</g, `&lt`);
 };
 
-const loadEditor = id => {
-    const prsn = ALL_PEOPLE.get(id);
-
-    document.querySelector('.edit_person__id').innerHTML = `ID: ${prsn.id}`;
-    document.querySelector('.edit_person__fields_wrapper').innerHTML = [
-        ['id', 'hidden'],
-        ['name', 'text', 'Name'],
-        ['sex', 'radio', 'Sex', ['M', 'F']],
-        ['relation_1', 'text', 'Relation 1'],
-        ['relation_2', 'text', 'Relation 2'],
-        ['is_partner', 'checkbox', 'Is partner'],
-        ['dob', 'date', 'Date of birth'],
-        ['dod', 'date', 'Date of death'],
-        ['info', 'text', 'Other information']
-    ].map(([fname, type, label, options]) => {
-        const input = (type === 'radio')
-            ? options.map(
-                val => `
-                    <label>
-                        ${val}
-                        <input
-                            type='radio'
-                            name='${fname}'
-                            value="${escapeValue(val, true)}"
-                            ${prsn[fname] === val ? 'checked' :''}
-                        >
-                    </label>`
-            ).join('')
-            : `
-                <input
-                    type='${type}'
-                    name='${fname}'
-                    value="${escapeValue(prsn[fname])}"
-                >`
-
-        return `
-            <label class='${type === 'hidden' ? `--hide` : 'edit_person__field'}'>
-                ${label}
-                ${input}
-            </label>
-            `;
-    }).join('');
-
-    document.querySelector('.edit_person__images').innerHTML = (prsn.images || []).map(
-        src => `<img src='${src}' class='person__image'></img>`
-    ).join('')
-
-};
-
 
 const dataChanges = (() => {
 
     const changeLog = new Map();
+
+    const loadEditor = id => {
+        const prsn = ALL_PEOPLE.get(id);
+        document.querySelector('.edit_person__id').innerHTML = `ID: ${prsn.id}`;
+        document.querySelector('.edit_person__fields_wrapper').innerHTML = [
+            ['id', 'hidden'],
+            ['name', 'text', 'Name'],
+            ['sex', 'radio', 'Sex', ['M', 'F']],
+            ['relation_1', 'text', 'Relation 1'],
+            ['relation_2', 'text', 'Relation 2'],
+            ['is_partner', 'checkbox', 'Is partner'],
+            ['dob', 'date', 'Date of birth'],
+            ['dod', 'date', 'Date of death'],
+            ['info', 'text', 'Other information']
+        ].map(([fname, type, label, options]) => {
+            const input = (type === 'radio')
+                ? options.map(
+                    val => `
+                        <label>
+                            ${val}
+                            <input
+                                type='radio'
+                                name='${fname}'
+                                value="${escapeValue(val, true)}"
+                                ${prsn[fname] === val ? 'checked' :''}
+                            >
+                        </label>`
+                ).join('')
+                : `
+                    <input
+                        type='${type}'
+                        name='${fname}'
+                        value="${escapeValue(prsn[fname])}"
+                    >`
+
+            return `
+                <label class='${type === 'hidden' ? `--hide` : 'edit_person__field'}'>
+                    ${label}
+                    ${input}
+                </label>
+                `;
+        }).join('');
+
+        document.querySelector('.edit_person__images').innerHTML = (prsn.images || []).map(
+            src => `<img src='${src}' class='edit_person__image'></img>`
+        ).join('')
+
+    };
 
     const resetChanges = () => changeLog.clear();
 
@@ -434,97 +423,122 @@ const dataChanges = (() => {
             changeLog.set('images', imgs);
             document.querySelector('.edit_person__images').insertAdjacentHTML(
                 'afterbegin',
-                `<img src='${src}' class='person__image'></img>`
+                `<img src='${src}' class='edit_person__image'></img>`
             );
         };
         reader.readAsDataURL(file);
     };
 
+    document.querySelector('.tree').addEventListener('click', ev => {
+        const el_person = ev.target.closest('.person');
+        el_person && loadEditor(el_person.dataset.id);
+    });
+
+    document.getElementById('id_form_edit_person').addEventListener('beforetoggle', ev => {
+        const was_openned = ev.newState === 'open';
+        document.querySelectorAll('header, main').forEach( el => el.inert = was_openned);
+        was_openned && resetChanges();
+    });
+
     document.getElementById('id_form_edit_person').addEventListener('change', logChange);
     document.getElementById('id_button_edit_person_save').addEventListener('click', save);
     document.getElementById('id_input_upload_image').addEventListener('input', addImage);
 
-    return {
-        resetChanges,
+})();
+
+
+const exportData = (() => {
+
+    const exportToJSON = () => {
+        const el = document.createElement('a');
+        el.setAttribute(
+            'href',
+            'data:text/plain;charset=utf-8,'
+            + encodeURIComponent(JSON.stringify(
+                [...ALL_PEOPLE.values()]
+                .filter(obj => !obj.is_missing)
+                .map(obj => {
+                    if (ALL_PEOPLE.get(obj.relation_2)?.is_missing) {
+                        obj.relation_2 = '';
+                    };
+                    delete obj.children;
+                    return obj;
+                })
+            ))
+        );
+        el.setAttribute('download', `tree-${new Date().getTime()}.json`);
+        el.style.display = 'none';
+        document.body.appendChild(el);
+        el.click();
+        document.body.removeChild(el);
     };
+
+    document.getElementById('id_button_export').addEventListener('click', exportToJSON);
+    return exportToJSON;
 
 })();
 
 
-const exportToJSON = () => {
-    const el = document.createElement('a');
-    el.setAttribute(
-        'href',
-        'data:text/plain;charset=utf-8,'
-        + encodeURIComponent(JSON.stringify(
-            [...ALL_PEOPLE.values()]
-            .filter(obj => !obj.is_missing)
-            .map(obj => {
-                if (ALL_PEOPLE.get(obj.relation_2)?.is_missing) {
-                    obj.relation_2 = '';
-                };
-                delete obj.children;
-                return obj;
-            })
-        ))
-    );
-    el.setAttribute('download', 'tree.json');
-    el.style.display = 'none';
-    document.body.appendChild(el);
-    el.click();
-    document.body.removeChild(el);
+const parseImport = (() => {
 
-};
+    const readFile = async ev => {
+        const file = ev.target.files[0];
+        const split_file_name = file.name.split('.');
 
+        const parser = {
+            json: JSON.parse,
+            csv: parseCSV,
+        }[split_file_name[split_file_name.length - 1]];
 
-if (localStorage.getItem('tree')) {
-    rebuild(JSON.parse(localStorage.getItem('tree')))
-};
+        if (!parser) {
+            prompt('Invalid file type');
+            return;
+        };
 
-(() => {
-    let mouseDown = false;
-    let startX, startY, scrollLeft, scrollTop;
-    const slider = document.querySelector('main');
-
-    const startDragging = ev => {
-      mouseDown = true;
-      startX = ev.pageX - slider.offsetLeft;
-      startY = ev.pageY - slider.offsetTop;
-      scrollLeft = slider.scrollLeft;
-      scrollTop = slider.scrollTop;
+        const reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = e => {
+            rebuild(parser(e.target.result));
+            ev.target.value = '';
+        };
     };
 
-    const stopDragging = () => {
-      mouseDown = false;
+    const parseCSV = txt => {
+
+        const csvToArray = text => {
+            let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0, l;
+            for (l of text) {
+                if ('"' === l) {
+                    if (s && l === p) row[i] += l;
+                    s = !s;
+                }
+                else if (',' === l && s) l = row[++i] = '';
+                else if ('\n' === l && s) {
+                    if ('\r' === p) row[i] = row[i].slice(0, -1);
+                    row = ret[++r] = [l = '']; i = 0;
+                } else row[i] += l;
+                p = l;
+            }
+            return ret;
+        };
+
+        const grid = csvToArray(txt);
+        const rows = grid.filter(row => row.join('').length > 1); //Remove blank rows
+        const fields = rows.shift();
+        return rows.map(
+            row => Object.fromEntries(
+                fields.map((key, idx) => [key, row[idx]])
+            )
+        );
+
     };
 
-    const move = ev => {
-        ev.preventDefault();
-        if(!mouseDown) { return; }
-        const x = ev.pageX - slider.offsetLeft;
-        const y = ev.pageY - slider.offsetTop;
-        const scrollX = x - startX;
-        const scrollY = y - startY;
-        slider.scrollLeft = scrollLeft - scrollX;
-        slider.scrollTop = scrollTop - scrollY;
-    };
+    document.getElementById('id_input_upload_date').addEventListener('input', readFile);
 
-    // Add the event listeners
-    slider.addEventListener('mousemove', move, false);
-    slider.addEventListener('mousedown', startDragging, false);
-    slider.addEventListener('mouseup', stopDragging, false);
-    slider.addEventListener('mouseleave', stopDragging, false);
+
+    const localCache = localStorage.getItem('data');
+    localCache && rebuild(JSON.parse(localCache));
+
 })();
 
-document.getElementById('id_input_upload_date').addEventListener('input', parseImport);
-document.querySelector('body').addEventListener('click', ev => {
-    const el_person = ev.target.closest('.person');
-    el_person && loadEditor(el_person.dataset.id);
-});
-document.getElementById('id_button_export').addEventListener('click', exportToJSON);
 
-document.getElementById('id_form_edit_person').addEventListener('beforetoggle', ev => {
-    const was_openned = ev.newState === 'open';
-    document.querySelectorAll('header, main').forEach( el => el.inert = was_openned);
-    was_openned && dataChanges.resetChanges();
-});

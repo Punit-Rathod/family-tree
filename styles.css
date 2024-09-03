@@ -107,7 +107,6 @@ main:active {
 
 .person__image {
     max-height: 10ch;
-    margin: auto;
 }
 
 .partner > .person {
@@ -158,6 +157,12 @@ main:active {
     align-items: center;
     gap: 1rem;
 }
+
+.edit_person__image {
+    max-height: 10ch;
+    margin: auto;
+}
+
 
 .header_field {
     min-height: 2rem;
