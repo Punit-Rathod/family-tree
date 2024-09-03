@@ -10,26 +10,25 @@
 
     <body>
         <header>
-            <label>
+            <label class="header_field">
                 Search
                 <input type="search" id="id_search">
             </label>
-            <label>
+            <label class="header_field">
                 Show all
                 <input type="checkbox" id="id_input_show_all" checked>
             </label>
-            <label>
-                Load data
-                <input id="id_input_upload_date" type="file">
-            </label>
-            <label>
-                Import image
-                <input id="id_input_upload_image" type="file">
-            </label>
-
-            <label>
+            <label class="header_field">
                 Zoom
                 <input type="range" id="id_input_zoom" name="zoom" min="10" max="100" value="100"/>
+            </label>
+            <label class="header_field">
+                Load data
+                <input id="id_input_upload_date" type="file" class="--hide">
+            </label>
+            <label class="header_field">
+                Import image
+                <input id="id_input_upload_image" type="file" class="--hide">
             </label>
             <button id='id_button_export'>
                 Export tree

@@ -98,11 +98,11 @@ main:active {
     border: none;
     border-radius: .5rem;
     translate: -1.5rem;
+    transition: scale .1s;
 }
 
 .person:hover {
     scale: 1.1;
-    transition: scale .1s;
 }
 
 .partner > .person {
@@ -153,6 +153,20 @@ main:active {
 
 .button {
     min-height: 2rem;
+}
+
+.header_field {
+    min-height: 2rem;
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    padding-inline: .5rem;
+    border: 1px solid;
+    border-radius: .5rem;
+}
+
+.header_field:hover {
+    box-shadow: 1px 1px teal;;
 }
 
 .--hide {

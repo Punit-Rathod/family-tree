@@ -264,16 +264,17 @@ const rebuild = (() => {
         });
         buildTree(tree, ALL_PEOPLE);
         renderTree(tree, ALL_PEOPLE);
-        localStorage.setItem('tree', JSON.stringify([...ALL_PEOPLE.values()]))
+        changeView.searchPerson();
+        localStorage.setItem('tree', JSON.stringify([...ALL_PEOPLE.values()]));
     };
 
 })();
 
 const changeView = (() => {
 
-    const searchPerson = ev => {
+    const searchPerson = () => {
         document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
-        const str = ev.target.value.toLowerCase();
+        const str = document.getElementById('id_search').value.toLowerCase();
         if (!str) return showAll();
         const found = [];
         ALL_PEOPLE.forEach(obj => obj.name.toLowerCase().includes(str) && found.push(obj.id));
@@ -282,7 +283,8 @@ const changeView = (() => {
         document.getElementById('id_input_show_all').checked = false;
         hideAll();
         const wrapper = document.querySelector('.tree');
-        wrapper.querySelectorAll(qry).forEach(el => {
+        const els = wrapper.querySelectorAll(qry);
+        els.forEach(el => {
             el.classList.add('highlight');
             while (el !== wrapper) {
                 if (el.classList.contains('trunk')) {
@@ -292,6 +294,7 @@ const changeView = (() => {
                 el = el.parentNode;
             };
         });
+        els[0]?.scrollIntoView({behavior: 'smooth'});
     };
 
     const toggleHideAll = ev => {
@@ -308,6 +311,8 @@ const changeView = (() => {
     document.getElementById('id_search').addEventListener('input', searchPerson);
     document.getElementById('id_input_show_all').addEventListener('input', toggleHideAll);
     document.getElementById('id_input_zoom').addEventListener('input', zoomPage);
+
+    return {searchPerson}
 
 })();
 
