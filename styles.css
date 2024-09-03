@@ -158,11 +158,22 @@ main:active {
     gap: 1rem;
 }
 
+.edit_person__image_wrapper:focus-within {
+    --image_max_height: 70vh;
+    --image_controls_display: block;
+}
+
 .edit_person__image {
-    max-height: 10ch;
+    max-height: var(--image_max_height, 10ch);
+    transition: max-height .2s;
     margin: auto;
 }
 
+.edit_person__delete_image {
+    display: var(--image_controls_display, none);
+    margin-left: auto;
+    background-color: lightpink;
+}
 
 .header_field {
     min-height: 2rem;

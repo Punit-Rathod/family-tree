@@ -339,6 +339,13 @@ const dataChanges = (() => {
 
     const changeLog = new Map();
 
+    const makeImageElement = src => `
+        <div tabindex=0 class='edit_person__image_wrapper'>
+            <img src='${src}' class='edit_person__image'></img>
+            <button class='edit_person__delete_image button'>Delete</button>
+        </div>
+        `;
+
     const loadEditor = id => {
         const prsn = ALL_PEOPLE.get(id);
         document.querySelector('.edit_person__id').innerHTML = `ID: ${prsn.id}`;
@@ -381,9 +388,7 @@ const dataChanges = (() => {
                 `;
         }).join('');
 
-        document.querySelector('.edit_person__images').innerHTML = (prsn.images || []).map(
-            src => `<img src='${src}' class='edit_person__image'></img>`
-        ).join('')
+        document.querySelector('.edit_person__images').innerHTML = (prsn.images || []).map(makeImageElement).join('')
 
     };
 
@@ -423,7 +428,7 @@ const dataChanges = (() => {
             changeLog.set('images', imgs);
             document.querySelector('.edit_person__images').insertAdjacentHTML(
                 'afterbegin',
-                `<img src='${src}' class='edit_person__image'></img>`
+                makeImageElement(src),
             );
         };
         reader.readAsDataURL(file);
