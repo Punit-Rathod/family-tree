@@ -56,215 +56,218 @@ const parseImport = async ev => {
 };
 
 
-const buildMap = tree => {
-    ALL_PEOPLE.clear();
-    let prsn;
-    for (let i = 0; i < tree.length; i++) {
-        prsn = tree[i];
-        ALL_PEOPLE.has(prsn.id) && console.error(
-            'Duplicate id',
-            prsn,
-        );
-        prsn.children = new Map();
-        ALL_PEOPLE.set(prsn.id, prsn);
-    };
-};
+const rebuild = (() => {
 
 
-const validate = (data, mapping) => {
-
-    const err = (txt, prsn) => console.error(txt, prsn);
-
-    const validateRelation1 = prsn => {
-        if (!prsn.relation_1) return;
-        !mapping.has(prsn.relation_1)
-        && err(
-            'Incorrect relation_1',
-            prsn,
-        );
+    const buildMap = tree => {
+        ALL_PEOPLE.clear();
+        let prsn;
+        for (let i = 0; i < tree.length; i++) {
+            prsn = tree[i];
+            ALL_PEOPLE.has(prsn.id) && console.error(
+                'Duplicate id',
+                prsn,
+            );
+            prsn.children = new Map();
+            ALL_PEOPLE.set(prsn.id, prsn);
+        };
     };
 
-    const validateRelation2 = prsn => {
-        if (!prsn.relation_2) return;
-        !mapping.has(prsn.relation_2)
-        && err(
-            'Incorrect relation_2',
-            prsn,
-        );
-    };
+    const validate = (data, mapping) => {
 
-    const validateIsPartner = prsn => {
-        prsn.is_partner = prsn.is_partner ? true: false;
-    };
+        const err = (txt, prsn) => console.error(txt, prsn);
 
-    const validateSex = prsn => {
-        !['M', 'F'].includes(prsn.sex) && err(
-            'INVALID SEX',
-            prsn,
-        );
-    };
-
-    const validateDOB = prsn => {
-        if (!prsn.dob) return;
-        (prsn.dob.length !== 10) && err(
-            'Invalid dob',
-            prsn,
-        );
-        prsn.dob.split('-').some(v => !+v) && err(
-            'Invalid dob',
-            prsn,
-        );
-    };
-
-    const validateDOD = prsn => {
-        if (!prsn.dod) return;
-        (prsn.dod.length !== 10) && err(
-            'Invalid dod',
-            prsn,
-        );
-        prsn.dod.split('-').some(v => !+v) && err(
-            'Invalid dod',
-            prsn,
-        );
-    };
-
-    let prsn;
-    for (let i = 0; i < data.length; i++) {
-        prsn = data[i];
-        validateRelation1(prsn);
-        validateRelation2(prsn);
-        validateIsPartner(prsn);
-        validateSex(prsn);
-        validateDOB(prsn);
-        validateDOD(prsn);
-    };
-};
-
-
-const buildTree = (tree, mapping) => {
-    const len = tree.length
-    let skip = -1;
-    for (let i = len - 1; i >= skip; i--) {
-        const prsn = tree.pop();
-        const r1 = mapping.get(prsn.relation_1);
-
-        if (!r1) {
-            ++skip;
-            tree.unshift(prsn);
-            continue;
+        const validateRelation1 = prsn => {
+            if (!prsn.relation_1) return;
+            !mapping.has(prsn.relation_1)
+            && err(
+                'Incorrect relation_1',
+                prsn,
+            );
         };
 
-        const chldrn = r1.children;
-
-        if (prsn.is_partner) {
-            if (chldrn.has(prsn.id)) continue;
-            chldrn.set(prsn.id, []);
-            continue;
+        const validateRelation2 = prsn => {
+            if (!prsn.relation_2) return;
+            !mapping.has(prsn.relation_2)
+            && err(
+                'Incorrect relation_2',
+                prsn,
+            );
         };
 
-        if (!prsn.relation_2) {
-            const missing = {
-                id: `${r1.id}-MISSING`,
-                is_missing: true,
-                relation_1: r1.id,
-                is_partner: true,
-                sex: r1.sex === 'M' ? 'F' : 'M',
-                name: '(Unknown)',
+        const validateIsPartner = prsn => {
+            prsn.is_partner = prsn.is_partner ? true: false;
+        };
+
+        const validateSex = prsn => {
+            !['M', 'F'].includes(prsn.sex) && err(
+                'INVALID SEX',
+                prsn,
+            );
+        };
+
+        const validateDOB = prsn => {
+            if (!prsn.dob) return;
+            (prsn.dob.length !== 10) && err(
+                'Invalid dob',
+                prsn,
+            );
+            prsn.dob.split('-').some(v => !+v) && err(
+                'Invalid dob',
+                prsn,
+            );
+        };
+
+        const validateDOD = prsn => {
+            if (!prsn.dod) return;
+            (prsn.dod.length !== 10) && err(
+                'Invalid dod',
+                prsn,
+            );
+            prsn.dod.split('-').some(v => !+v) && err(
+                'Invalid dod',
+                prsn,
+            );
+        };
+
+        let prsn;
+        for (let i = 0; i < data.length; i++) {
+            prsn = data[i];
+            validateRelation1(prsn);
+            validateRelation2(prsn);
+            validateIsPartner(prsn);
+            validateSex(prsn);
+            validateDOB(prsn);
+            validateDOD(prsn);
+        };
+    };
+
+
+    const buildTree = (tree, mapping) => {
+        const len = tree.length
+        let skip = -1;
+        for (let i = len - 1; i >= skip; i--) {
+            const prsn = tree.pop();
+            const r1 = mapping.get(prsn.relation_1);
+
+            if (!r1) {
+                ++skip;
+                tree.unshift(prsn);
+                continue;
             };
-            mapping.set(missing.id, missing);
-            prsn.relation_2 = missing.id;
-        };
 
-        const r2_id = prsn.relation_2;
-        if (!chldrn.has(r2_id)) {
-            chldrn.set(r2_id, [])
+            const chldrn = r1.children;
+
+            if (prsn.is_partner) {
+                if (chldrn.has(prsn.id)) continue;
+                chldrn.set(prsn.id, []);
+                continue;
+            };
+
+            if (!prsn.relation_2) {
+                const missing = {
+                    id: `${r1.id}-MISSING`,
+                    is_missing: true,
+                    relation_1: r1.id,
+                    is_partner: true,
+                    sex: r1.sex === 'M' ? 'F' : 'M',
+                    name: '(Unknown)',
+                };
+                mapping.set(missing.id, missing);
+                prsn.relation_2 = missing.id;
+            };
+
+            const r2_id = prsn.relation_2;
+            if (!chldrn.has(r2_id)) {
+                chldrn.set(r2_id, [])
+            };
+            chldrn.get(r2_id).unshift(prsn);
         };
-        chldrn.get(r2_id).unshift(prsn);
     };
-};
 
 
-const renderTree = (tree, mapping) => {
+    const renderTree = (tree, mapping) => {
 
-    const renderPerson = prsn => {
-        return `
-        <button
-            class='person ${prsn.sex === 'M' ? 'male' : 'female'}'
-            data-id='${prsn.id}'
-            popovertarget='id_form_edit_person'
-        >
-            <b>${prsn.name}</b>
-            <label
-                style='
-                    display: flex;
-                    text-align: center;
-                    '
+        const renderPerson = prsn => {
+            return `
+            <button
+                class='person ${prsn.sex === 'M' ? 'male' : 'female'}'
+                data-id='${prsn.id}'
+                popovertarget='id_form_edit_person'
             >
+                <b>${prsn.name}</b>
+                <label
+                    style='
+                        display: flex;
+                        text-align: center;
+                        '
+                >
 
-                ${prsn.children?.size
-                    ? `<input type='checkbox' class='button__toggle_trunk' checked>`
+                    ${prsn.children?.size
+                        ? `<input type='checkbox' class='button__toggle_trunk' checked>`
+                        : ''
+                    }
+                </label>
+                ${prsn.image ? `<img src=${prsn.image}></img>` : ''}
+                <small>${prsn.id}</small>
+                <small>${prsn.dob}</small>
+            </button>`;
+        };
+
+        const renderPartner = prsn => {
+            return `
+                <div class='partner'>
+                    ${renderPerson(prsn)}
+                </div>
+                `;
+        };
+
+        const renderBranch = prsn => {
+
+            const groups = prsn.children.size
+                ? [...prsn.children].map(([prtnr_id, childrn]) => {
+                    const items =  [
+                        renderPartner(mapping.get(prtnr_id)),
+                        childrn.length
+                            ? `
+                            <div class='children'>
+                                ${childrn.map(renderBranch).join('')}
+                            </div>
+                            `
+                            : '',
+                    ].join('')
+                    return `
+                    <div class='group'>
+                        ${items}
+                    </div>`
+                }).join('')
+                : '';
+
+            return `
+            <div class='trunk'>
+                ${renderPerson(prsn)}
+                ${groups
+                    ? `<div class='groups'>${groups}</div>`
                     : ''
                 }
-            </label>
-            ${prsn.image ? `<img src=${prsn.image}></img>` : ''}
-            <small>${prsn.id}</small>
-            <small>${prsn.dob}</small>
-        </button>`;
+            </div>`;
+
+        };
+        document.querySelector('.tree').innerHTML = tree.map(renderBranch).join('');
     };
 
-    const renderPartner = prsn => {
-        return `
-            <div class='partner'>
-                ${renderPerson(prsn)}
-            </div>
-            `;
+    return tree => {
+        buildMap(tree);
+        validate(tree, ALL_PEOPLE);
+        tree.sort((a, b) => {
+            return (a.dob > b.dob) ? 1 : -1
+        });
+        buildTree(tree, ALL_PEOPLE);
+        renderTree(tree, ALL_PEOPLE);
+        localStorage.setItem('tree', JSON.stringify([...ALL_PEOPLE.values()]))
     };
 
-    const renderBranch = prsn => {
-
-        const groups = prsn.children.size
-            ? [...prsn.children].map(([prtnr_id, childrn]) => {
-                const items =  [
-                    renderPartner(mapping.get(prtnr_id)),
-                    childrn.length
-                        ? `
-                        <div class='children'>
-                            ${childrn.map(renderBranch).join('')}
-                        </div>
-                        `
-                        : '',
-                ].join('')
-                return `
-                <div class='group'>
-                    ${items}
-                </div>`
-            }).join('')
-            : '';
-
-        return `
-        <div class='trunk'>
-            ${renderPerson(prsn)}
-            ${groups
-                ? `<div class='groups'>${groups}</div>`
-                : ''
-            }
-        </div>`;
-
-    };
-    document.querySelector('.tree').innerHTML = tree.map(renderBranch).join('');
-};
-
-
-const rebuild = tree => {
-    buildMap(tree);
-    validate(tree, ALL_PEOPLE);
-    tree.sort((a, b) => {
-        return (a.dob > b.dob) ? 1 : -1
-    });
-    buildTree(tree, ALL_PEOPLE);
-    renderTree(tree, ALL_PEOPLE);
-    localStorage.setItem('tree', JSON.stringify([...ALL_PEOPLE.values()]))
-};
+})();
 
 
 const searchPerson = ev => {
@@ -340,9 +343,23 @@ const loadEditor = id => {
     ].map(([fname, type, label, options]) => {
         const input = (type === 'radio')
             ? options.map(
-                val => `<label>${val}<input type='radio' name='${fname}' value="${escapeValue(val, true)}" ${prsn[fname] === val ? 'checked' :''}></label>`
+                val => `
+                    <label>
+                        ${val}
+                        <input
+                            type='radio'
+                            name='${fname}'
+                            value="${escapeValue(val, true)}"
+                            ${prsn[fname] === val ? 'checked' :''}
+                        >
+                    </label>`
             ).join('')
-            : `<input type='${type}' name='${fname}' value="${escapeValue(prsn[fname])}">`
+            : `
+                <input
+                    type='${type}'
+                    name='${fname}'
+                    value="${escapeValue(prsn[fname])}"
+                >`
 
         return `
             <label ${type === 'hidden' ? `class='--hide'` : ''}>
@@ -358,6 +375,8 @@ const dataChanges = (() => {
 
     const changeLog = new Map();
 
+    const resetChanges = () => changeLog.clear();
+
     const logChange = ev => {
         const field_name = ev.target.name;
         const fields = Object.fromEntries(new FormData(ev.target.closest('form')));
@@ -365,14 +384,18 @@ const dataChanges = (() => {
         changeLog.set(field_name, fields[field_name]);
     };
 
-    const save = () => {
-        ALL_PEOPLE.get(fields.id)[field_name] = fields[field_name];
-        const tree = [...ALL_PEOPLE.values()];
-        rebuild(tree);
+    const save = ev => {
+        ev.preventDefault();
+        const prsn = ALL_PEOPLE.get(changeLog.get('id'));
+        if (!prsn) return;
+        changeLog.delete('id');
+        changeLog.forEach((val, field) => prsn[field] = val);
+        rebuild([...ALL_PEOPLE.values()]);
     };
 
     return {
         changeLog,
+        resetChanges,
         logChange,
         save,
     };
@@ -416,6 +439,19 @@ const runClickEvents = ev => {
 };
 
 
+const imageToString = ev => {
+    const file = ev.target.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+        const src = reader.result;
+        navigator.clipboard.writeText(src);
+        console.log(src);
+        // document.getElementById('id_preview_image').src = src;
+    };
+    reader.readAsDataURL(file);
+};
+
+
 const zoomPage = ev => {
     document.querySelector('.tree').style.scale = +ev.target.value / 100
 };
@@ -425,27 +461,27 @@ const zoomPage = ev => {
     let startX, startY, scrollLeft, scrollTop;
     const slider = document.querySelector('main');
 
-    const startDragging = e => {
+    const startDragging = ev => {
       mouseDown = true;
-      startX = e.pageX - slider.offsetLeft;
-      startY = e.pageY - slider.offsetTop;
+      startX = ev.pageX - slider.offsetLeft;
+      startY = ev.pageY - slider.offsetTop;
       scrollLeft = slider.scrollLeft;
       scrollTop = slider.scrollTop;
     };
 
-    const stopDragging = e => {
+    const stopDragging = () => {
       mouseDown = false;
     };
 
-    const move = e => {
-      e.preventDefault();
-      if(!mouseDown) { return; }
-      const x = e.pageX - slider.offsetLeft;
-      const y = e.pageY - slider.offsetTop;
-      const scrollX = x - startX;
-      const scrollY = y - startY;
-      slider.scrollLeft = scrollLeft - scrollX;
-      slider.scrollTop = scrollTop - scrollY;
+    const move = ev => {
+        ev.preventDefault();
+        if(!mouseDown) { return; }
+        const x = ev.pageX - slider.offsetLeft;
+        const y = ev.pageY - slider.offsetTop;
+        const scrollX = x - startX;
+        const scrollY = y - startY;
+        slider.scrollLeft = scrollLeft - scrollX;
+        slider.scrollTop = scrollTop - scrollY;
     };
 
     // Add the event listeners
@@ -455,23 +491,17 @@ const zoomPage = ev => {
     slider.addEventListener('mouseleave', stopDragging, false);
 })();
 
-
 document.getElementById('id_input_upload_date').addEventListener('input', parseImport);
 document.getElementById('id_search').addEventListener('input', searchPerson);
 document.getElementById('id_input_show_all').addEventListener('input', toggleHideAll);
 document.querySelector('body').addEventListener('click', runClickEvents);
-document.getElementById('id_input_upload_image').addEventListener('input', ev => {
-    const file = ev.target.files[0];
-    const reader = new FileReader();
-    reader.onload = () => {
-        const src = reader.result;
-        navigator.clipboard.writeText(src);
-        console.log(src);
-        document.getElementById('id_preview_image').src = src;
-    };
-    reader.readAsDataURL(file);
-});
-
+document.getElementById('id_input_upload_image').addEventListener('input', imageToString);
 document.getElementById('id_input_zoom').addEventListener('input', zoomPage);
 document.getElementById('id_button_export').addEventListener('click', exportToJSON);
 document.getElementById('id_form_edit_person').addEventListener('change', dataChanges.logChange);
+document.getElementById('id_form_edit_person').addEventListener('beforetoggle', ev => {
+    const was_openned = ev.newState === 'open';
+    document.querySelectorAll('header, main').forEach( el => el.inert = was_openned);
+    was_openned && dataChanges.resetChanges();
+});
+document.getElementById('id_button_edit_person_save').addEventListener('click', dataChanges.save);
