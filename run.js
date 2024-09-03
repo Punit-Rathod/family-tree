@@ -536,16 +536,16 @@ const importExport = (() => {
             })
         )
 
-        const file = new Blob([jsonString], {
+        const blob = new Blob([jsonString], {
             type: 'application/json',
         });
         const compressionStream = new CompressionStream('gzip');
-        const compressedReadableStream = file.stream().pipeThrough(compressionStream);
+        const compressedReadableStream = blob.stream().pipeThrough(compressionStream);
         const compressedResponse = await new Response(compressedReadableStream);
-        const blob = await compressedResponse.blob();
+        const compressedBlob = await compressedResponse.blob();
 
         const el = window.document.createElement("a");
-        el.href = window.URL.createObjectURL(blob);
+        el.href = window.URL.createObjectURL(compressedBlob);
         el.download = `tree-${new Date().getTime()}.gz`;
         document.body.appendChild(el);
         el.click();
