@@ -115,18 +115,6 @@ main:active {
     border-bottom: 1px solid;
 }
 
-.male {
-    background-color: hsl(194.74deg 53.27% 79.02% / var(--bg_opacity, 1));
-}
-
-.female {
-    background-color: hsl(351 100% 86% / var(--bg_opacity, 1));
-}
-
-.highlight {
-    border: 5px solid red;
-}
-
 
 #id_form_edit_person:popover-open {
     display: flex;
@@ -155,6 +143,12 @@ main:active {
     min-height: 2rem;
 }
 
+.edit_person__field {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .header_field {
     min-height: 2rem;
     display: flex;
@@ -171,4 +165,16 @@ main:active {
 
 .--hide {
     display: none;
+}
+
+.--male {
+    background-color: hsl(194.74deg 53.27% 79.02% / var(--bg_opacity, 1));
+}
+
+.--female {
+    background-color: hsl(351 100% 86% / var(--bg_opacity, 1));
+}
+
+.--highlight {
+    border: 5px solid red;
 }

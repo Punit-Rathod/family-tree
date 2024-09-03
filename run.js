@@ -189,25 +189,27 @@ const rebuild = (() => {
     const renderTree = (tree, mapping) => {
 
         const renderPerson = prsn => {
+
+            const toggle_trunk = prsn.children?.size
+                ? `
+                    <label
+                        style='
+                            display: flex;
+                            text-align: center;
+                            '
+                    >
+                        <input type='checkbox' class='button__toggle_trunk' checked>
+                    </label>
+                `
+                : '';
             return `
             <button
-                class='person ${prsn.sex === 'M' ? 'male' : 'female'}'
+                class='person ${prsn.sex === 'M' ? '--male' : '--female'}'
                 data-id='${prsn.id}'
                 popovertarget='id_form_edit_person'
             >
                 <b>${prsn.name}</b>
-                <label
-                    style='
-                        display: flex;
-                        text-align: center;
-                        '
-                >
-
-                    ${prsn.children?.size
-                        ? `<input type='checkbox' class='button__toggle_trunk' checked>`
-                        : ''
-                    }
-                </label>
+                ${toggle_trunk}
                 ${prsn.image ? `<img src=${prsn.image}></img>` : ''}
                 <small>${prsn.id}</small>
                 <small>${prsn.dob}</small>
@@ -272,8 +274,10 @@ const rebuild = (() => {
 
 const changeView = (() => {
 
+    const CLSS_HIGHLIGHT = '--highlight';
+
     const searchPerson = () => {
-        document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+        document.querySelectorAll(`.${CLSS_HIGHLIGHT}`).forEach(el => el.classList.remove(CLSS_HIGHLIGHT));
         const str = document.getElementById('id_search').value.toLowerCase();
         if (!str) return showAll();
         const found = [];
@@ -285,7 +289,7 @@ const changeView = (() => {
         const wrapper = document.querySelector('.tree');
         const els = wrapper.querySelectorAll(qry);
         els.forEach(el => {
-            el.classList.add('highlight');
+            el.classList.add(CLSS_HIGHLIGHT);
             while (el !== wrapper) {
                 if (el.classList.contains('trunk')) {
                     const checkbox = el.querySelector(':scope > .person .button__toggle_trunk');
@@ -333,6 +337,8 @@ const escapeValue = (val, is_input=false) => {
 
 const loadEditor = id => {
     const prsn = ALL_PEOPLE.get(id);
+
+    document.querySelector('.edit_person__id').innerHTML = `ID: ${prsn.id}`;
     document.querySelector('.edit_person__fields_wrapper').innerHTML = [
         ['id', 'hidden'],
         ['name', 'text', 'Name'],
@@ -365,12 +371,13 @@ const loadEditor = id => {
                 >`
 
         return `
-            <label ${type === 'hidden' ? `class='--hide'` : ''}>
+            <label class='${type === 'hidden' ? `--hide` : 'edit_person__field'}'>
                 ${label}
                 ${input}
             </label>
             `;
     }).join('');
+
 };
 
 
