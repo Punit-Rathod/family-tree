@@ -127,7 +127,10 @@ main:active {
     border: 5px solid red;
 }
 
-#id_form_edit_person {
+
+#id_form_edit_person:popover-open {
+    display: flex;
+    flex-direction: column;
     padding: 0;
     border-radius: 1rem;
 }
@@ -146,6 +149,10 @@ main:active {
 
 .person:has(.button__toggle_trunk:checked) ~ .groups {
     display: flex;
+}
+
+.button {
+    min-height: 2rem;
 }
 
 .--hide {

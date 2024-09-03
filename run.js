@@ -269,50 +269,48 @@ const rebuild = (() => {
 
 })();
 
+const changeView = (() => {
 
-const searchPerson = ev => {
-
-    document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
-
-    const str = ev.target.value.toLowerCase();
-    if (!str) {
-        allItems.show();
-        return
-    };
-
-    const found = [];
-    ALL_PEOPLE.forEach(obj => obj.name.toLowerCase().includes(str) && found.push(obj.id));
-    const qry = found.map(id => `[data-id='${id}']`).join(',');
-    if (!qry) return;
-    document.getElementById('id_input_show_all').checked = false;
-    allItems.hide();
-    const wrapper = document.querySelector('.tree');
-    wrapper.querySelectorAll(qry).forEach(el => {
-        el.classList.add('highlight');
-        while (el !== wrapper) {
-            if (el.classList.contains('trunk')) {
-                const checkbox = el.querySelector(':scope > .person .button__toggle_trunk');
-                checkbox && (checkbox.checked = true);
+    const searchPerson = ev => {
+        document.querySelectorAll('.highlight').forEach(el => el.classList.remove('highlight'));
+        const str = ev.target.value.toLowerCase();
+        if (!str) return showAll();
+        const found = [];
+        ALL_PEOPLE.forEach(obj => obj.name.toLowerCase().includes(str) && found.push(obj.id));
+        const qry = found.map(id => `[data-id='${id}']`).join(',');
+        if (!qry) return;
+        document.getElementById('id_input_show_all').checked = false;
+        hideAll();
+        const wrapper = document.querySelector('.tree');
+        wrapper.querySelectorAll(qry).forEach(el => {
+            el.classList.add('highlight');
+            while (el !== wrapper) {
+                if (el.classList.contains('trunk')) {
+                    const checkbox = el.querySelector(':scope > .person .button__toggle_trunk');
+                    checkbox && (checkbox.checked = true);
+                };
+                el = el.parentNode;
             };
-            el = el.parentNode;
-        };
-    });
-};
-
-
-const allItems = (() => {
-    return {
-        show: () => document.querySelectorAll('.button__toggle_trunk:not(:checked)').forEach(el => el.checked = true),
-        hide: () => document.querySelectorAll('.button__toggle_trunk:checked').forEach(el => el.checked = false),
+        });
     };
+
+    const toggleHideAll = ev => {
+        ev.target.checked
+            ? showAll
+            : hideAll;
+    };
+
+    const showAll = () => document.querySelectorAll('.button__toggle_trunk:not(:checked)').forEach(el => el.checked = true);
+    const hideAll = () => document.querySelectorAll('.button__toggle_trunk:checked').forEach(el => el.checked = false);
+
+    const zoomPage = ev => document.querySelector('.tree').style.scale = +ev.target.value / 100;
+
+    document.getElementById('id_search').addEventListener('input', searchPerson);
+    document.getElementById('id_input_show_all').addEventListener('input', toggleHideAll);
+    document.getElementById('id_input_zoom').addEventListener('input', zoomPage);
+
 })();
 
-
-const toggleHideAll = ev => {
-    ev.target.checked
-        ? allItems.show()
-        : allItems.hide();
-};
 
 
 const escapeValue = (val, is_input=false) => {
@@ -391,13 +389,14 @@ const dataChanges = (() => {
         changeLog.delete('id');
         changeLog.forEach((val, field) => prsn[field] = val);
         rebuild([...ALL_PEOPLE.values()]);
+        resetChanges();
     };
 
+    document.getElementById('id_form_edit_person').addEventListener('change', logChange);
+    document.getElementById('id_button_edit_person_save').addEventListener('click', save);
+
     return {
-        changeLog,
         resetChanges,
-        logChange,
-        save,
     };
 
 })();
@@ -433,12 +432,6 @@ if (localStorage.getItem('tree')) {
     rebuild(JSON.parse(localStorage.getItem('tree')))
 };
 
-const runClickEvents = ev => {
-    const el_person = ev.target.closest('.person');
-    el_person && loadEditor(el_person.dataset.id);
-};
-
-
 const imageToString = ev => {
     const file = ev.target.files[0];
     const reader = new FileReader();
@@ -449,11 +442,6 @@ const imageToString = ev => {
         // document.getElementById('id_preview_image').src = src;
     };
     reader.readAsDataURL(file);
-};
-
-
-const zoomPage = ev => {
-    document.querySelector('.tree').style.scale = +ev.target.value / 100
 };
 
 (() => {
@@ -492,16 +480,15 @@ const zoomPage = ev => {
 })();
 
 document.getElementById('id_input_upload_date').addEventListener('input', parseImport);
-document.getElementById('id_search').addEventListener('input', searchPerson);
-document.getElementById('id_input_show_all').addEventListener('input', toggleHideAll);
-document.querySelector('body').addEventListener('click', runClickEvents);
+document.querySelector('body').addEventListener('click', ev => {
+    const el_person = ev.target.closest('.person');
+    el_person && loadEditor(el_person.dataset.id);
+});
 document.getElementById('id_input_upload_image').addEventListener('input', imageToString);
-document.getElementById('id_input_zoom').addEventListener('input', zoomPage);
 document.getElementById('id_button_export').addEventListener('click', exportToJSON);
-document.getElementById('id_form_edit_person').addEventListener('change', dataChanges.logChange);
+
 document.getElementById('id_form_edit_person').addEventListener('beforetoggle', ev => {
     const was_openned = ev.newState === 'open';
     document.querySelectorAll('header, main').forEach( el => el.inert = was_openned);
     was_openned && dataChanges.resetChanges();
 });
-document.getElementById('id_button_edit_person_save').addEventListener('click', dataChanges.save);
