@@ -7,7 +7,6 @@
 
     <body>
         <header>
-            <h1>Family tree</h1>
             <label>
                 Search
                 <input type="search" id="id_search">
@@ -24,12 +23,19 @@
                 Import image
                 <input id="id_input_upload_image" type="file">
             </label>
+
+            <label>
+                Zoom
+                <input type="range" id="id_input_zoom" name="zoom" min="10" max="100" value="100"/>
+            </label>
             <button id='id_button_export'>
                 Export tree
             </button>
         </header>
 
-        <main class="tree">
+        <main>
+            <section class="tree">
+            </section>
         </main>
 
         <div id="id_edit" popover>

@@ -394,35 +394,71 @@ if (localStorage.getItem('tree')) {
     rebuild(JSON.parse(localStorage.getItem('tree')))
 };
 
-document.getElementById('id_input_upload_date').addEventListener('input', parseImport);
-
-document.getElementById('id_search').addEventListener('input', searchPerson);
-
-document.getElementById('id_input_show_all').addEventListener('input', toggleHideAll);
-
-document.querySelector('body').addEventListener('click', ev => {
-
+const runClickEvents = ev => {
     const el_person = ev.target.closest('.person');
     if (!el_person) return;
+    ev.target.closest('.button__edit') && loadEditor(el_person.dataset.id);
+};
 
-    if (ev.target.closest('.button__edit')) {
-        return loadEditor(el_person.dataset.id);
+
+const zoomPage = ev => {
+    document.querySelector('.tree').style.scale = +ev.target.value / 100
+};
+
+(() => {
+    let mouseDown = false;
+    let startX, startY, scrollLeft, scrollTop;
+    const slider = document.querySelector('main');
+
+    const startDragging = e => {
+      mouseDown = true;
+      startX = e.pageX - slider.offsetLeft;
+      startY = e.pageY - slider.offsetTop;
+      scrollLeft = slider.scrollLeft;
+      scrollTop = slider.scrollTop;
     };
 
-});
+    const stopDragging = e => {
+      mouseDown = false;
+    };
 
+    const move = e => {
+      e.preventDefault();
+      if(!mouseDown) { return; }
+      const x = e.pageX - slider.offsetLeft;
+      const y = e.pageY - slider.offsetTop;
+      const scrollX = x - startX;
+      const scrollY = y - startY;
+      slider.scrollLeft = scrollLeft - scrollX;
+      slider.scrollTop = scrollTop - scrollY;
+    };
+
+    // Add the event listeners
+    slider.addEventListener('mousemove', move, false);
+    slider.addEventListener('mousedown', startDragging, false);
+    slider.addEventListener('mouseup', stopDragging, false);
+    slider.addEventListener('mouseleave', stopDragging, false);
+})();
+
+
+document.getElementById('id_input_upload_date').addEventListener('input', parseImport);
+document.getElementById('id_search').addEventListener('input', searchPerson);
+document.getElementById('id_input_show_all').addEventListener('input', toggleHideAll);
+document.querySelector('body').addEventListener('click', runClickEvents);
 document.getElementById('id_input_upload_image').addEventListener('input', ev => {
     const file = ev.target.files[0];
     const reader = new FileReader();
     reader.onload = () => {
         const src = reader.result;
         navigator.clipboard.writeText(src);
+        console.log(src);
         document.getElementById('id_preview_image').src = src;
     };
     reader.readAsDataURL(file);
 });
 
+document.getElementById('id_input_zoom').addEventListener('input', zoomPage);
 document.getElementById('id_button_export').addEventListener('click', exportToJSON);
-
 document.getElementById('id_edit').addEventListener('change', applyChanges);
+
 
