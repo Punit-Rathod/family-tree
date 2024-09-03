@@ -67,21 +67,6 @@
         </form>
         <footer>
             <script type="text/javascript" src="run.js"></script>
-            <script>
-                if (typeof ALL_PEOPLE === 'undefined') {
-                    fetch('https://raw.githubusercontent.com/Punit-Rathod/family-tree/main/run.js')
-                    .then(x => x.text())
-                    .then(txt => eval(txt));
-
-                    fetch('https://raw.githubusercontent.com/Punit-Rathod/family-tree/main/styles.css')
-                    .then(x => x.text())
-                    .then(txt => {
-                        const css = document.createElement('style');
-                        css.innerHTML = txt;
-                        document.head.appendChild(css);
-                    });
-                };
-            </script>
         </footer>
 
     </body>

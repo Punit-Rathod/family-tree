@@ -1,0 +1,25 @@
+<html lang="en">
+    <head>
+        <script>
+        fetch('https://raw.githubusercontent.com/Punit-Rathod/family-tree/main/site.html')
+        .then(x => x.text())
+        .then(txt => {
+            const parser = new DOMParser();
+            document.querySelector('html').replaceChildren(
+                ...parser.parseFromString(txt, 'text/html').querySelector('html').children
+            )
+            fetch('https://raw.githubusercontent.com/Punit-Rathod/family-tree/main/run.js')
+            .then(x => x.text())
+            .then(txt => eval(txt));
+
+            fetch('https://raw.githubusercontent.com/Punit-Rathod/family-tree/main/styles.css')
+            .then(x => x.text())
+            .then(txt => {
+                const css = document.createElement('style');
+                css.innerHTML = txt;
+                document.head.appendChild(css);
+            });
+        })
+        </script>
+    </head>
+</html>
