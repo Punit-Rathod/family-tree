@@ -504,98 +504,59 @@ const dataChanges = (() => {
 })();
 
 
-const exportData = (() => {
+const importExport = (() => {
 
-    const exportToJSON = () => {
-        const el = document.createElement('a');
-        el.setAttribute(
-            'href',
-            'data:text/plain;charset=utf-8,'
-            + encodeURIComponent(JSON.stringify(
-                [...ALL_PEOPLE.values()]
-                .filter(obj => !obj.is_missing)
-                .map(obj => {
-                    if (ALL_PEOPLE.get(obj.relation_2)?.is_missing) {
-                        obj.relation_2 = '';
-                    };
-                    delete obj.children;
-                    return obj;
-                })
-            ))
+    const importFile = async ev => {
+        const file = ev.target.files[0];
+        const split_file_name = file.name.split('.');
+        let blob = file;
+        if (split_file_name[split_file_name.length - 1] === 'gz') {
+            const decompressionStream = new DecompressionStream('gzip');
+            const decompressedStream = file.stream().pipeThrough(decompressionStream);
+            blob = await new Response(decompressedStream).blob();
+        };
+
+        rebuild(
+            JSON.parse(await blob.text())
         );
-        el.setAttribute('download', `tree-${new Date().getTime()}.json`);
-        el.style.display = 'none';
+        ev.target.value = '';
+    };
+
+    const exportFile = async () => {
+
+        const jsonString = JSON.stringify(
+            [...ALL_PEOPLE.values()]
+            .filter(obj => !obj.is_missing)
+            .map(obj => {
+                if (ALL_PEOPLE.get(obj.relation_2)?.is_missing) {
+                    obj.relation_2 = '';
+                };
+                delete obj.children;
+                return obj;
+            })
+        )
+
+        const file = new Blob([jsonString], {
+            type: 'application/json',
+        });
+        const compressionStream = new CompressionStream('gzip');
+        const compressedReadableStream = file.stream().pipeThrough(compressionStream);
+        const compressedResponse = await new Response(compressedReadableStream);
+        const blob = await compressedResponse.blob();
+
+        const el = window.document.createElement("a");
+        el.href = window.URL.createObjectURL(blob);
+        el.download = `tree-${new Date().getTime()}.gz`;
         document.body.appendChild(el);
         el.click();
         document.body.removeChild(el);
     };
 
-    document.getElementById('id_button_export').addEventListener('click', exportToJSON);
-    return exportToJSON;
-
-})();
-
-
-const parseImport = (() => {
-
-    const readFile = async ev => {
-        const file = ev.target.files[0];
-        const split_file_name = file.name.split('.');
-
-        const parser = {
-            json: JSON.parse,
-            csv: parseCSV,
-        }[split_file_name[split_file_name.length - 1]];
-
-        if (!parser) {
-            prompt('Invalid file type');
-            return;
-        };
-
-        const reader = new FileReader();
-        reader.readAsText(file);
-        reader.onload = e => {
-            rebuild(parser(e.target.result));
-            ev.target.value = '';
-        };
-    };
-
-    const parseCSV = txt => {
-
-        const csvToArray = text => {
-            let p = '', row = [''], ret = [row], i = 0, r = 0, s = !0, l;
-            for (l of text) {
-                if ('"' === l) {
-                    if (s && l === p) row[i] += l;
-                    s = !s;
-                }
-                else if (',' === l && s) l = row[++i] = '';
-                else if ('\n' === l && s) {
-                    if ('\r' === p) row[i] = row[i].slice(0, -1);
-                    row = ret[++r] = [l = '']; i = 0;
-                } else row[i] += l;
-                p = l;
-            }
-            return ret;
-        };
-
-        const grid = csvToArray(txt);
-        const rows = grid.filter(row => row.join('').length > 1); //Remove blank rows
-        const fields = rows.shift();
-        return rows.map(
-            row => Object.fromEntries(
-                fields.map((key, idx) => [key, row[idx]])
-            )
-        );
-
-    };
-
-    document.getElementById('id_input_upload_date').addEventListener('input', readFile);
-
+    document.getElementById('id_input_upload_date').addEventListener('input', importFile);
+    document.getElementById('id_button_export').addEventListener('click', exportFile);
 
     const localCache = localStorage.getItem('data');
     localCache && rebuild(JSON.parse(localCache));
 
 })();
-
 
