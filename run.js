@@ -358,10 +358,19 @@ const dataChanges = (() => {
             ['is_partner', 'checkbox', 'Is partner'],
             ['dob', 'date', 'Date of birth'],
             ['dod', 'date', 'Date of death'],
-            ['info', 'text', 'Other information']
+            ['info', 'textarea', 'Information']
         ].map(([fname, type, label, options]) => {
-            const input = (type === 'radio')
-                ? options.map(
+
+            let input;
+            if (type === 'textarea') {
+                input = `
+                    <textarea
+                        name='${fname}'
+                        rows='3'
+                    >
+                    </textarea>`;
+            } else if (type === 'radio') {
+                input = options.map(
                     val => `
                         <label>
                             ${val}
@@ -372,13 +381,15 @@ const dataChanges = (() => {
                                 ${prsn[fname] === val ? 'checked' :''}
                             >
                         </label>`
-                ).join('')
-                : `
+                ).join('');
+            } else {
+                input = `
                     <input
                         type='${type}'
                         name='${fname}'
                         value="${escapeValue(prsn[fname])}"
-                    >`
+                    >`;
+            };
 
             return `
                 <label class='${type === 'hidden' ? '--hide' : 'edit_person__field'}'>
