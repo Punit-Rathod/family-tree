@@ -202,6 +202,17 @@ const rebuild = (() => {
                     </label>
                 `
                 : '';
+
+            const img = prsn.images ? `<img src=${prsn.images[0]} class='person__image'></img>` : '';
+            const dts = (prsn.dob || prsn.dod)
+                ? `
+                    <small
+                        style='text-wrap: nowrap;'
+                    >
+                        ${prsn.dob || '?'}${prsn.dod ? ` &rarr; ${prsn.dod}` : ''}
+                    </small>`
+                : '';
+
             return `
             <button
                 class='person ${prsn.sex === 'M' ? '--male' : '--female'}'
@@ -210,9 +221,8 @@ const rebuild = (() => {
             >
                 <b>${prsn.name}</b>
                 ${toggle_trunk}
-                ${prsn.image ? `<img src=${prsn.image}></img>` : ''}
-                <small>${prsn.id}</small>
-                <small>${prsn.dob}</small>
+                ${img}
+                ${dts}
             </button>`;
         };
 
@@ -321,7 +331,6 @@ const changeView = (() => {
 })();
 
 
-
 const escapeValue = (val, is_input=false) => {
     if (
         (val === null)
@@ -378,6 +387,10 @@ const loadEditor = id => {
             `;
     }).join('');
 
+    document.querySelector('.edit_person__images').innerHTML = (prsn.images || []).map(
+        src => `<img src='${src}' class='person__image'></img>`
+    ).join('')
+
 };
 
 
@@ -387,9 +400,13 @@ const dataChanges = (() => {
 
     const resetChanges = () => changeLog.clear();
 
+    const getFormData = () => Object.fromEntries(new FormData(
+        document.getElementById('id_form_edit_person')
+    ));
+
     const logChange = ev => {
         const field_name = ev.target.name;
-        const fields = Object.fromEntries(new FormData(ev.target.closest('form')));
+        const fields = getFormData();
         changeLog.set('id', fields.id);
         changeLog.set(field_name, fields[field_name]);
     };
@@ -404,8 +421,28 @@ const dataChanges = (() => {
         resetChanges();
     };
 
+    const addImage = ev => {
+        const file = ev.target.files[0];
+        const reader = new FileReader();
+        reader.onload = () => {
+            const src = reader.result;
+            const prsn = ALL_PEOPLE.get(getFormData().id);
+            if (!prsn);
+            changeLog.set('id', prsn.id);
+            const imgs = [...prsn.images] || [];
+            imgs.unshift(src);
+            changeLog.set('images', imgs);
+            document.querySelector('.edit_person__images').insertAdjacentHTML(
+                'afterbegin',
+                `<img src='${src}' class='person__image'></img>`
+            );
+        };
+        reader.readAsDataURL(file);
+    };
+
     document.getElementById('id_form_edit_person').addEventListener('change', logChange);
     document.getElementById('id_button_edit_person_save').addEventListener('click', save);
+    document.getElementById('id_input_upload_image').addEventListener('input', addImage);
 
     return {
         resetChanges,
@@ -442,18 +479,6 @@ const exportToJSON = () => {
 
 if (localStorage.getItem('tree')) {
     rebuild(JSON.parse(localStorage.getItem('tree')))
-};
-
-const imageToString = ev => {
-    const file = ev.target.files[0];
-    const reader = new FileReader();
-    reader.onload = () => {
-        const src = reader.result;
-        navigator.clipboard.writeText(src);
-        console.log(src);
-        // document.getElementById('id_preview_image').src = src;
-    };
-    reader.readAsDataURL(file);
 };
 
 (() => {
@@ -496,7 +521,6 @@ document.querySelector('body').addEventListener('click', ev => {
     const el_person = ev.target.closest('.person');
     el_person && loadEditor(el_person.dataset.id);
 });
-document.getElementById('id_input_upload_image').addEventListener('input', imageToString);
 document.getElementById('id_button_export').addEventListener('click', exportToJSON);
 
 document.getElementById('id_form_edit_person').addEventListener('beforetoggle', ev => {
