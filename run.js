@@ -188,9 +188,10 @@ const renderTree = (tree, mapping) => {
 
     const renderPerson = prsn => {
         return `
-        <div
+        <button
             class='person ${prsn.sex === 'M' ? 'male' : 'female'}'
             data-id='${prsn.id}'
+            popovertarget='id_form_edit_person'
         >
             <b>${prsn.name}</b>
             <label
@@ -208,10 +209,7 @@ const renderTree = (tree, mapping) => {
             ${prsn.image ? `<img src=${prsn.image}></img>` : ''}
             <small>${prsn.id}</small>
             <small>${prsn.dob}</small>
-            <button class='button__edit' popovertarget='id_edit'>
-                Edit
-            </button>
-        </div>`;
+        </button>`;
     };
 
     const renderPartner = prsn => {
@@ -314,54 +312,72 @@ const toggleHideAll = ev => {
 };
 
 
+const escapeValue = (val, is_input=false) => {
+    if (
+        (val === null)
+        || (val === undefined)
+    ) return '';
+    // replaces ', " and < to make is safe to insert into HTML
+    const initial = val
+        .toString()
+        .replace(/'/g, "&#39;")
+        .replace(/"/g, '&quot;');
+    return is_input ? initial : initial.replace(/</g, `&lt`);
+};
+
 const loadEditor = id => {
     const prsn = ALL_PEOPLE.get(id);
-
-    const fields = [
+    document.querySelector('.edit_person__fields_wrapper').innerHTML = [
         ['id', 'hidden'],
+        ['name', 'text', 'Name'],
+        ['sex', 'radio', 'Sex', ['M', 'F']],
         ['relation_1', 'text', 'Relation 1'],
         ['relation_2', 'text', 'Relation 2'],
         ['is_partner', 'checkbox', 'Is partner'],
-        ['name', 'text', 'Name'],
-        ['sex', 'radio', 'Sex', ['M', 'F']],
         ['dob', 'date', 'Date of birth'],
         ['dod', 'date', 'Date of death'],
         ['info', 'text', 'Other information']
-    ];
+    ].map(([fname, type, label, options]) => {
+        const input = (type === 'radio')
+            ? options.map(
+                val => `<label>${val}<input type='radio' name='${fname}' value="${escapeValue(val, true)}" ${prsn[fname] === val ? 'checked' :''}></label>`
+            ).join('')
+            : `<input type='${type}' name='${fname}' value="${escapeValue(prsn[fname])}">`
 
-    document.getElementById('id_edit').innerHTML = `
-        <b>
-            ${prsn.name}
-        </b>
-        <form class='edit_person__form'>
-            ${fields.map(([fname, type, label, options]) => {
-
-                const input = (type === 'radio')
-                    ? options.map(
-                        val => `<label>${val}<input type='radio' name='${fname}' value=${val} ${prsn[fname] === val ? 'checked' :''}></label>`
-                    ).join('')
-                    : `<input type='${type}' name='${fname}' value=${prsn[fname] === undefined ? '' : prsn[fname]}>`
-
-                return `
-                    <label ${type === 'hidden' ? `class='--hide'` : ''}>
-                        ${label}
-                        ${input}
-                    </label>
-                    `;
-            }).join('')}
-        </form>
-    `;
-
+        return `
+            <label ${type === 'hidden' ? `class='--hide'` : ''}>
+                ${label}
+                ${input}
+            </label>
+            `;
+    }).join('');
 };
 
 
-const applyChanges = ev => {
-    const field_name = ev.target.name;
-    const fields = Object.fromEntries(new FormData(ev.target.closest('form')));
-    ALL_PEOPLE.get(fields.id)[field_name] = fields[field_name];
-    const tree = [...ALL_PEOPLE.values()];
-    rebuild(tree);
-};
+const dataChanges = (() => {
+
+    const changeLog = new Map();
+
+    const logChange = ev => {
+        const field_name = ev.target.name;
+        const fields = Object.fromEntries(new FormData(ev.target.closest('form')));
+        changeLog.set('id', fields.id);
+        changeLog.set(field_name, fields[field_name]);
+    };
+
+    const save = () => {
+        ALL_PEOPLE.get(fields.id)[field_name] = fields[field_name];
+        const tree = [...ALL_PEOPLE.values()];
+        rebuild(tree);
+    };
+
+    return {
+        changeLog,
+        logChange,
+        save,
+    };
+
+})();
 
 
 const exportToJSON = () => {
@@ -396,8 +412,7 @@ if (localStorage.getItem('tree')) {
 
 const runClickEvents = ev => {
     const el_person = ev.target.closest('.person');
-    if (!el_person) return;
-    ev.target.closest('.button__edit') && loadEditor(el_person.dataset.id);
+    el_person && loadEditor(el_person.dataset.id);
 };
 
 
@@ -459,6 +474,4 @@ document.getElementById('id_input_upload_image').addEventListener('input', ev =>
 
 document.getElementById('id_input_zoom').addEventListener('input', zoomPage);
 document.getElementById('id_button_export').addEventListener('click', exportToJSON);
-document.getElementById('id_edit').addEventListener('change', applyChanges);
-
-
+document.getElementById('id_form_edit_person').addEventListener('change', dataChanges.logChange);
