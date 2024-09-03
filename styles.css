@@ -133,6 +133,10 @@ main:active {
     border-bottom: 1px solid;
 }
 
+body:has(#id_input_edit_mode:checked) {
+    --edit_form_pointer_events: auto;
+    --edit_form_field_border: 1px solid;
+}
 
 #id_form_edit_person:popover-open {
     max-height: 90vh;
@@ -140,6 +144,7 @@ main:active {
     flex-direction: column;
     padding: 0;
     border-radius: 1rem;
+    pointer-events: var(--edit_form_pointer_events, none);
 }
 
 #id_form_edit_person::backdrop {
@@ -170,6 +175,12 @@ main:active {
     display: flex;
     align-items: center;
     gap: 1rem;
+}
+
+.edit_person__field :where(input, textarea) {
+    border: var(--edit_form_field_border, none);
+    border-radius: .5rem;
+    padding-inline: .5rem
 }
 
 .edit_person__image_wrapper {

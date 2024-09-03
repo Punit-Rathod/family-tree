@@ -317,13 +317,12 @@ const changeView = (() => {
 
     const toggleHideAll = ev => {
         ev.target.checked
-            ? showAll
-            : hideAll;
+            ? showAll()
+            : hideAll();
     };
 
     const showAll = () => document.querySelectorAll('.button__toggle_trunk:not(:checked)').forEach(el => el.checked = true);
     const hideAll = () => document.querySelectorAll('.button__toggle_trunk:checked').forEach(el => el.checked = false);
-
     const zoomPage = ev => document.querySelector('.tree').style.scale = +ev.target.value / 100;
 
     document.getElementById('id_search').addEventListener('input', searchPerson);
@@ -364,25 +363,26 @@ const dataChanges = (() => {
         const prsn = ALL_PEOPLE.get(id);
         document.querySelector('.edit_person__id').innerHTML = `ID: ${prsn.id}`;
         document.querySelector('.edit_person__fields_wrapper').innerHTML = [
-            ['id', 'hidden'],
-            ['name', 'text', 'Name'],
-            ['sex', 'radio', 'Sex', ['M', 'F']],
-            ['relation_1', 'text', 'Relation 1'],
-            ['relation_2', 'text', 'Relation 2'],
-            ['is_partner', 'checkbox', 'Is partner'],
-            ['dob', 'date', 'Date of birth'],
-            ['dod', 'date', 'Date of death'],
-            ['info', 'textarea', 'Information']
-        ].map(([fname, type, label, options]) => {
+            {name: 'id', type: 'hidden'},
+            {name: 'name', type: 'text', label: 'Name'},
+            {name: 'sex', type: 'radio', label: 'Sex', options: ['M', 'F']},
+            {name: 'relation_1', type: 'text', label: 'Relation 1'},
+            {name: 'relation_2', type: 'text', label: 'Relation 2'},
+            {name: 'is_partner', type: 'checkbox', label: 'Is partner'},
+            {name: 'dob', type: 'date', label: 'Date of birth'},
+            {name: 'dod', type: 'date', label: 'Date of death'},
+            {name: 'info', type: 'textarea', placeholder: 'Information', style: 'width: 100%'},
+        ].map(({name:fname, type='', label='', options, placeholder='', style=''}) => {
 
             let input;
             if (type === 'textarea') {
                 input = `
                     <textarea
                         name='${fname}'
-                        rows='3'
-                    >
-                    </textarea>`;
+                        rows='5'
+                        style='width: 100%;'
+                        placeholder='${placeholder}'
+                    >${escapeValue(prsn[fname], true)}</textarea>`;
             } else if (type === 'radio') {
                 input = options.map(
                     val => `
@@ -401,12 +401,16 @@ const dataChanges = (() => {
                     <input
                         type='${type}'
                         name='${fname}'
-                        value="${escapeValue(prsn[fname])}"
+                        placeholder='${placeholder}'
+                        value="${escapeValue(prsn[fname], true)}"
                     >`;
             };
 
             return `
-                <label class='${type === 'hidden' ? '--hide' : 'edit_person__field'}'>
+                <label
+                    class='${type === 'hidden' ? '--hide' : 'edit_person__field'}'
+                    style='${style}'
+                >
                     ${label}
                     ${input}
                 </label>
