@@ -429,7 +429,7 @@ const dataChanges = (() => {
             const prsn = ALL_PEOPLE.get(getFormData().id);
             if (!prsn);
             changeLog.set('id', prsn.id);
-            const imgs = [...prsn.images] || [];
+            const imgs = prsn.images ? [...prsn.images] : [];
             imgs.unshift(src);
             changeLog.set('images', imgs);
             document.querySelector('.edit_person__images').insertAdjacentHTML(
