@@ -18,13 +18,13 @@ const rebuild = (() => {
         };
     };
 
-    const checkFields = (data, mapping) => {
+    const checkFields = (data, ppl) => {
 
         const err = (txt, prsn) => console.error(txt, prsn);
 
         const checkRelation1 = prsn => {
             if (!prsn.relation_1) return;
-            !mapping.has(prsn.relation_1)
+            !ppl.has(prsn.relation_1)
             && err(
                 'Incorrect relation_1',
                 prsn,
@@ -33,7 +33,7 @@ const rebuild = (() => {
 
         const checkRelation2 = prsn => {
             if (!prsn.relation_2) return;
-            !mapping.has(prsn.relation_2)
+            !ppl.has(prsn.relation_2)
             && err(
                 'Incorrect relation_2',
                 prsn,
@@ -88,13 +88,12 @@ const rebuild = (() => {
         };
     };
 
-
-    const buildTree = (tree, mapping) => {
+    const buildTree = (tree, ppl) => {
         const len = tree.length
         let skip = -1;
         for (let i = len - 1; i >= skip; i--) {
             const prsn = tree.pop();
-            const r1 = mapping.get(prsn.relation_1);
+            const r1 = ppl.get(prsn.relation_1);
 
             if (!r1) {
                 ++skip;
@@ -112,14 +111,13 @@ const rebuild = (() => {
 
             if (!prsn.relation_2) {
                 const missing = {
-                    id: `${r1.id}-MISSING`,
+                    id: crypto.randomUUID(),
                     is_missing: true,
                     relation_1: r1.id,
                     is_partner: true,
                     sex: r1.sex === 'M' ? 'F' : 'M',
-                    name: '(Unknown)',
                 };
-                mapping.set(missing.id, missing);
+                ppl.set(missing.id, missing);
                 prsn.relation_2 = missing.id;
             };
 
@@ -131,10 +129,11 @@ const rebuild = (() => {
         };
     };
 
-
-    const renderTree = (tree, mapping) => {
+    const renderTree = (tree, ppl) => {
 
         const renderPerson = prsn => {
+
+            const name = `<b>${prsn.is_missing ? '(Unknown)' : escapeValue(prsn.name)}</b>`;
 
             const toggle_trunk = prsn.relations?.size
                 ? `
@@ -179,7 +178,7 @@ const rebuild = (() => {
                 data-id='${prsn.id}'
                 popovertarget='id_form_edit_person'
             >
-                <b>${prsn.name}</b>
+                ${name}
                 ${toggle_trunk}
                 ${img}
                 ${dts}
@@ -199,7 +198,7 @@ const rebuild = (() => {
             const grps = prsn.relations.size
                 ? [...prsn.relations].map(([prtnr_id, rels]) => {
                     const items =  [
-                        renderPartner(mapping.get(prtnr_id)),
+                        renderPartner(ppl.get(prtnr_id)),
                         rels.length
                             ? `
                             <div class='children'>
@@ -345,14 +344,14 @@ const escapeValue = (val, is_input=false) => {
 };
 
 
-const dataChanges = (() => {
+const changeData = (() => {
 
     const changeLog = new Map();
 
     const makeImageElement = src => `
         <div tabindex=0 class='edit_person__image_wrapper'>
             <img src='${src}' class='edit_person__image'></img>
-            <button class='edit_person__delete_image button'>Delete</button>
+            <button class='edit_person__delete_image button edit_person__button'>Delete</button>
         </div>
         `;
 
@@ -364,8 +363,8 @@ const dataChanges = (() => {
             {name: 'name', type: 'text', label: 'Name'},
             {name: 'sex', type: 'radio', label: 'Sex', options: ['M', 'F']},
             {name: 'relation_1', type: 'text', label: 'Relation 1'},
+            {name: 'is_partner', type: 'checkbox', label: 'Relation 1 is partner'},
             {name: 'relation_2', type: 'text', label: 'Relation 2'},
-            {name: 'is_partner', type: 'checkbox', label: 'Is partner'},
             {name: 'dob', type: 'date', label: 'Date of birth'},
             {name: 'dod', type: 'date', label: 'Date of death'},
             {name: 'info', type: 'textarea', placeholder: 'Information', style: 'width: 100%'},
@@ -512,7 +511,6 @@ const importExport = (() => {
             const decompressedStream = file.stream().pipeThrough(decompressionStream);
             blob = await new Response(decompressedStream).blob();
         };
-
         rebuild(
             JSON.parse(await blob.text())
         );

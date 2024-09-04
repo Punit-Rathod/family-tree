@@ -30,6 +30,14 @@ main:active {
     user-select: none;
 }
 
+
+.button {
+    min-height: 2rem;
+}
+
+
+
+
 .tree {
     transform-origin: left top;
 }
@@ -58,6 +66,10 @@ main:active {
 
 .relation_groups {
     display: none;
+}
+
+.person:has(.button__toggle_trunk:checked) ~ .relation_groups {
+    display: flex;
 }
 
 .relation_group {
@@ -136,6 +148,7 @@ main:active {
 body:has(#id_input_edit_mode:checked) {
     --edit_form_pointer_events: auto;
     --edit_form_field_border: 1px solid;
+    --edit_form_buttons: block;
 }
 
 #id_form_edit_person:popover-open {
@@ -144,7 +157,6 @@ body:has(#id_input_edit_mode:checked) {
     flex-direction: column;
     padding: 0;
     border-radius: 1rem;
-    pointer-events: var(--edit_form_pointer_events, none);
 }
 
 #id_form_edit_person::backdrop {
@@ -157,18 +169,7 @@ body:has(#id_input_edit_mode:checked) {
     align-items: start;
     gap: 1rem;
     padding: 1rem;
-}
-
-.edit_person__images {
-    display: flex;
-}
-
-.person:has(.button__toggle_trunk:checked) ~ .relation_groups {
-    display: flex;
-}
-
-.button {
-    min-height: 2rem;
+    pointer-events: var(--edit_form_pointer_events, none);
 }
 
 .edit_person__field {
@@ -181,6 +182,11 @@ body:has(#id_input_edit_mode:checked) {
     border: var(--edit_form_field_border, none);
     border-radius: .5rem;
     padding-inline: .5rem
+}
+
+.edit_person__images {
+    display: flex;
+    padding-inline: 1rem;
 }
 
 .edit_person__image_wrapper {
@@ -197,8 +203,17 @@ body:has(#id_input_edit_mode:checked) {
     transition: max-height .2s;
 }
 
+
+.edit_person__button {
+    display: var(--edit_form_buttons, none);
+}
+
+
 .edit_person__delete_image {
-    display: var(--image_controls_display, none);
+    display: var(
+        --edit_form_buttons
+        var(--image_controls_display, none)
+    );
     margin-left: auto;
     background-color: lightpink;
 }
