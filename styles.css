@@ -160,10 +160,9 @@ main:active {
     border-bottom: 1px solid;
 }
 
-body:has(#id_input_edit_mode:checked) {
-    --edit_form_pointer_events: auto;
-    --edit_form_field_border: 1px solid;
-    --edit_form_buttons: block;
+body:not(:has(#id_input_edit_mode:checked)) {
+    --edit_form_pointer_events: none;
+    --edit_form_element: none;
 }
 
 #id_form_edit_person:popover-open {
@@ -184,7 +183,7 @@ body:has(#id_input_edit_mode:checked) {
     align-items: start;
     gap: 1rem;
     padding: 1rem;
-    pointer-events: var(--edit_form_pointer_events, none);
+    pointer-events: var(--edit_form_pointer_events, auto);
 }
 
 .edit_person__field {
@@ -194,7 +193,8 @@ body:has(#id_input_edit_mode:checked) {
 }
 
 .edit_person__field :where(input, textarea) {
-    border: var(--edit_form_field_border, none);
+    display: var(--edit_form_element);
+    border: 1px solid;
     border-radius: .5rem;
     padding-inline: .5rem
 }
@@ -209,6 +209,11 @@ body:has(#id_input_edit_mode:checked) {
     border-radius: .5rem;
 }
 
+
+body:not(:has(#id_input_edit_mode:checked)) .edit_person__field[data-display_value]:after {
+    content: attr(data-display_value);
+}
+
 .edit_person__images {
     display: flex;
     padding-inline: 1rem;
@@ -220,7 +225,7 @@ body:has(#id_input_edit_mode:checked) {
 
 .edit_person__image_wrapper:focus-within {
     --image_max_height: 70vh;
-    --image_controls_display: var(--edit_form_buttons);
+    --image_controls_display: var(--edit_form_element, block);
 }
 
 .edit_person__image {
@@ -231,7 +236,7 @@ body:has(#id_input_edit_mode:checked) {
 }
 
 .edit_person__control {
-    display: var(--edit_form_buttons, none);
+    display: var(--edit_form_element, block);
 }
 
 .edit_person__delete_image {
@@ -268,3 +273,4 @@ body:has(#id_input_edit_mode:checked) {
     display: inline;
     content: attr(data-total_people);
 }
+

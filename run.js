@@ -395,28 +395,40 @@ const changeData = (() => {
             {name: 'relation_2', type: 'text', label: 'Relation 2'},
             {name: 'dob', type: 'date', label: 'Date of birth'},
             {name: 'dod', type: 'date', label: 'Date of death'},
-            {name: 'info', type: 'textarea', placeholder: 'Information', style: 'width: 100%'},
-        ].map(({name:fname, type='', label='', options, placeholder='', style=''}) => {
+            {
+                name: 'info',
+                type: 'textarea',
+                label: 'Information',
+                style: `
+                    width: 100%;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: .5rem;
+                    `,
+            },
+        ].map(({name:fname, type='', label='', options, style=''}) => {
+
+            const val = prsn[fname];
+            const escp_val = escapeValue(val, true);
 
             let input;
             if (type === 'textarea') {
                 input = `
                     <textarea
                         name='${fname}'
-                        rows='2'
+                        rows='5'
                         style='width: 100%;'
-                        placeholder='${placeholder}'
-                    >${escapeValue(prsn[fname], true)}</textarea>`;
+                    >${escp_val}</textarea>`;
             } else if (type === 'radio') {
                 input = options.map(
-                    val => `
+                    opt => `
                         <label>
-                            ${val}
+                            ${opt}
                             <input
                                 type='radio'
                                 name='${fname}'
-                                value="${escapeValue(val, true)}"
-                                ${prsn[fname] === val ? 'checked' :''}
+                                value="${escapeValue(opt, true)}"
+                                ${val === opt ? 'checked' :''}
                             >
                         </label>`
                 ).join('');
@@ -425,8 +437,7 @@ const changeData = (() => {
                     <input
                         type='${type}'
                         name='${fname}'
-                        placeholder='${placeholder}'
-                        value="${escapeValue(prsn[fname], true)}"
+                        value="${escp_val}"
                     >`;
             };
 
@@ -434,6 +445,7 @@ const changeData = (() => {
                 <label
                     class='${type === 'hidden' ? '--hide' : 'edit_person__field'}'
                     style='${style}'
+                    ${val ? `data-display_value="${escp_val}"` : ''}
                 >
                     ${label}
                     ${input}
