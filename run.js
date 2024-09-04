@@ -345,14 +345,25 @@ const changeView = (() => {
 
     const toggleHideAll = ev => (ev.target.checked ? showAll : hideAll)();
 
-    const showAll = () => document.querySelectorAll('.button__toggle_trunk:not(:checked)').forEach(el => el.checked = true);
-    const hideAll = () => document.querySelectorAll('.button__toggle_trunk:checked').forEach(el => el.checked = false);
+    const showAll = () => {
+        document.querySelectorAll('.button__toggle_trunk:not(:checked)').forEach(el => el.checked = true);
+        scrollToElement(
+            getHighlightedPeople()[+EL_COUNTER.dataset.current_person - 1],
+            {
+                behavior: 'instant',
+            }
+        );
+    };
+    const hideAll = () => {
+        document.querySelectorAll('.button__toggle_trunk:checked').forEach(el => el.checked = false);
+    };
     const zoomPage = ev => EL_TREE.style.scale = +ev.target.value / 100;
 
-    const scrollToElement = el => el?.scrollIntoView({
+    const scrollToElement = (el, props={}) => el?.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
         inline: 'center',
+        ...props,
     });
 
     EL_SEARCH.addEventListener('input', searchPerson);
