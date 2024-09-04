@@ -238,12 +238,6 @@ const rebuild = (() => {
         buildTree(tree, ppl);
         renderTree(tree, ppl);
         changeView.searchPerson();
-        localStorage.setItem(
-            'data',
-            JSON.stringify(
-                [...ppl.values()]
-            )
-        );
     };
 
 })();
@@ -556,9 +550,6 @@ const importExport = (() => {
 
     document.getElementById('id_input_upload_date').addEventListener('input', importFile);
     document.getElementById('id_button_export').addEventListener('click', exportFile);
-
-    const localCache = localStorage.getItem('data');
-    localCache && rebuild(JSON.parse(localCache));
 
 })();
 
