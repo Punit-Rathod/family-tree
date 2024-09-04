@@ -3,6 +3,16 @@ const DATABASE = {
     people: new Map(),
 };
 
+
+const makeNewId = () => {
+    let new_id = crypto.randomUUID();
+    while (DATABASE.people.get(new_id)) {
+        new_id = crypto.randomUUID();
+    };
+    return new_id;
+};
+
+
 const rebuild = (() => {
 
     const buildMap = (tree, ppl) => {
@@ -88,14 +98,6 @@ const rebuild = (() => {
         };
     };
 
-    const makeNewId = ppl => {
-        let new_id = crypto.randomUUID();
-        while (ppl.get(new_id)) {
-            new_id = crypto.randomUUID();
-        };
-        return new_id;
-    };
-
     const buildTree = (tree, ppl) => {
         const len = tree.length
         let skip = -1;
@@ -121,7 +123,7 @@ const rebuild = (() => {
                 let missing = ppl.get([...chldrn.keys()].find(key => ppl.get(key)?.is_missing));
                 if (!missing) {
                     missing = {
-                        id: makeNewId(ppl),
+                        id: makeNewId(),
                         is_missing: true,
                         relation_1: r1.id,
                         is_partner: true,
@@ -310,7 +312,7 @@ const changeView = (() => {
         const found = [];
         ppl.forEach(obj => obj.name?.toLowerCase().includes(str) && found.push(obj.id));
         const qry = found.map(id => `[data-id='${id}']`).join(',');
-        if (!qry) return;
+        if (!qry) return updateFoundCount(0);
         EL_SHOW_ALL_TOGGLE.checked = false;
         hideAll();
         const els = EL_TREE.querySelectorAll(qry);
@@ -332,7 +334,6 @@ const changeView = (() => {
         const max = +EL_COUNTER.dataset.total_people;
         let current_idx = +EL_COUNTER.dataset.current_person;
         (current_idx >= max) && (current_idx = 0);
-        console.log()
         scrollToElement(getHighlightedPeople()[current_idx]);
         EL_COUNTER.dataset.current_person = ++current_idx;
     };
@@ -394,8 +395,7 @@ const changeData = (() => {
         </div>
         `;
 
-    const loadEditor = id => {
-        const prsn = DATABASE.people.get(id);
+    const loadEditor = prsn => {
         document.querySelector('.edit_person__id').innerHTML = `ID: ${prsn.id}`;
         document.querySelector('.edit_person__fields_wrapper').innerHTML = [
             {name: 'id', type: 'hidden'},
@@ -481,10 +481,25 @@ const changeData = (() => {
         changeLog.set(field_name, fields[field_name]);
     };
 
+    const addRelation = ev => {
+        resetChanges();
+        const relation_1 = getFormData().id;
+        changeLog.set('relation_1', relation_1);
+        relation_1 && loadEditor({
+            id: makeNewId(),
+            relation_1,
+        });
+    };
+
     const save = ev => {
         ev.preventDefault();
-        const prsn = DATABASE.people.get(changeLog.get('id'));
-        if (!prsn) return;
+        const id = changeLog.get('id');
+        if (!id) return;
+        let prsn = DATABASE.people.get(id);
+        if (!prsn) {
+            DATABASE.people.set(id, {id});
+            prsn = DATABASE.people.get(id);
+        };
         changeLog.delete('id');
         changeLog.forEach((val, field) => prsn[field] = val);
         rebuild([...DATABASE.people.values()]);
@@ -534,7 +549,7 @@ const changeData = (() => {
 
     document.getElementById('id_tree').addEventListener('click', ev => {
         const el_person = ev.target.closest('.person');
-        el_person && loadEditor(el_person.dataset.id);
+        el_person && loadEditor(DATABASE.people.get(el_person.dataset.id));
     });
 
     EL_FORM.addEventListener('beforetoggle', ev => {
@@ -544,6 +559,7 @@ const changeData = (() => {
     });
 
     EL_FORM.addEventListener('change', logChange);
+    document.getElementById('id_button_add_relation').addEventListener('click', addRelation);
     document.getElementById('id_button_edit_person_save').addEventListener('click', save);
     document.getElementById('id_input_add_image').addEventListener('input', addImage);
     document.querySelector('.edit_person__images').addEventListener('click', deleteImage);

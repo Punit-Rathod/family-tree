@@ -38,7 +38,6 @@ main:active {
     flex-grow: 1
 }
 
-
 .header_field {
     display: flex;
     min-height: 2rem;
@@ -80,6 +79,53 @@ main:active {
     display: none;
 }
 
+.person {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: .5rem;
+    margin-inline: .5rem;
+    border: none;
+    border-radius: .5rem;
+    translate: -1.5rem;
+    transition: scale .1s;
+    cursor: pointer;
+}
+
+.person:hover {
+    scale: 1.1;
+}
+
+.person__image_wrapper {
+    position: relative;
+}
+
+.person__image {
+    max-height: 10ch;
+    border-radius: .5rem;
+}
+
+.person__image_count {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding-inline: .25rem;
+    border-radius: 50% 0 0 0;
+    background-color: lightgray;
+}
+
+.partner > .person {
+    margin-inline: 0;
+    translate: 0;
+    --bg_opacity: .3;
+}
+
+.trunk:has(> .children) > .person {
+    border-bottom: 1px solid;
+}
+
+
+
 .relation_groups {
     display: none;
 }
@@ -114,50 +160,6 @@ main:active {
 .children {
     display: flex;
     flex-direction: row;
-}
-
-.person {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: .5rem;
-    margin-inline: .5rem;
-    border: none;
-    border-radius: .5rem;
-    translate: -1.5rem;
-    transition: scale .1s;
-}
-
-.person:hover {
-    scale: 1.1;
-}
-
-.person__image_wrapper {
-    position: relative;
-}
-
-.person__image {
-    max-height: 10ch;
-    border-radius: .5rem;
-}
-
-.person__image_count {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    padding-inline: .25rem;
-    border-radius: 50% 0 0 0;
-    background-color: lightgray;
-}
-
-.partner > .person {
-    margin-inline: 0;
-    translate: 0;
-    --bg_opacity: .3;
-}
-
-.trunk:has(> .children) > .person {
-    border-bottom: 1px solid;
 }
 
 body:not(:has(#id_input_edit_mode:checked)) {
