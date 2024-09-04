@@ -30,9 +30,29 @@ main:active {
     user-select: none;
 }
 
-.button {
+.def_button {
     min-height: 2rem;
 }
+
+.def_button--form_control {
+    flex-grow: 1
+}
+
+
+.header_field {
+    display: flex;
+    min-height: 2rem;
+    gap: .5rem;
+    align-items: center;
+    padding-inline: .5rem;
+    border: 1px solid;
+    border-radius: .5rem;
+}
+
+.header_field:hover {
+    box-shadow: 1px 1px teal;;
+}
+
 
 #id_tree {
     transform-origin: left top;
@@ -95,7 +115,6 @@ main:active {
     display: flex;
     flex-direction: row;
 }
-
 
 .person {
     display: flex;
@@ -180,6 +199,16 @@ body:has(#id_input_edit_mode:checked) {
     padding-inline: .5rem
 }
 
+.edit_person__field--drop_zone {
+    display: flex;
+    min-height: 2rem;
+    gap: .5rem;
+    align-items: center;
+    padding-inline: .5rem;
+    border: 1px solid;
+    border-radius: .5rem;
+}
+
 .edit_person__images {
     display: flex;
     padding-inline: 1rem;
@@ -191,40 +220,25 @@ body:has(#id_input_edit_mode:checked) {
 
 .edit_person__image_wrapper:focus-within {
     --image_max_height: 70vh;
-    --image_controls_display: block;
+    --image_controls_display: var(--edit_form_buttons);
 }
 
 .edit_person__image {
     max-height: var(--image_max_height, 10ch);
     max-width: calc(100vw - 4rem);
     transition: max-height .2s;
+    cursor: pointer;
 }
 
-.edit_person__button {
+.edit_person__control {
     display: var(--edit_form_buttons, none);
 }
 
 .edit_person__delete_image {
-    display: var(
-        --edit_form_buttons,
-        var(--image_controls_display, none)
-    );
+    display: var(--image_controls_display, none);
+    width: 100%;
     margin-left: auto;
     background-color: lightpink;
-}
-
-.header_field {
-    min-height: 2rem;
-    display: flex;
-    gap: .5rem;
-    align-items: center;
-    padding-inline: .5rem;
-    border: 1px solid;
-    border-radius: .5rem;
-}
-
-.header_field:hover {
-    box-shadow: 1px 1px teal;;
 }
 
 .--hide {

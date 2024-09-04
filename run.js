@@ -247,7 +247,9 @@ const changeView = (() => {
 
     const CLSS_HIGHLIGHT = '--highlight';
     const EL_TREE = document.getElementById('id_tree');
+    const EL_SEARCH = document.getElementById('id_search');
     const EL_COUNTER = document.getElementById('id_data_search_count');
+    const EL_SHOW_ALL_TOGGLE = document.getElementById('id_input_show_all');
 
     (() => {
         let mouseDown = false;
@@ -288,17 +290,17 @@ const changeView = (() => {
 
     const searchPerson = () => {
         getHighlightedPeople().forEach(el => el.classList.remove(CLSS_HIGHLIGHT));
-        const str = document.getElementById('id_search').value.toLowerCase();
+        const str = EL_SEARCH.value.toLowerCase();
         const ppl = DATABASE.people;
         if (!str) {
             updateFoundCount(ppl.size);
-            return showAll()
+            return showAll();
         };
         const found = [];
         ppl.forEach(obj => obj.name?.toLowerCase().includes(str) && found.push(obj.id));
         const qry = found.map(id => `[data-id='${id}']`).join(',');
         if (!qry) return;
-        document.getElementById('id_input_show_all').checked = false;
+        EL_SHOW_ALL_TOGGLE.checked = false;
         hideAll();
         const els = EL_TREE.querySelectorAll(qry);
         els.forEach(el => {
@@ -331,12 +333,8 @@ const changeView = (() => {
 
     const toggleHideAll = ev => (ev.target.checked ? showAll : hideAll)();
 
-    const showAll = () => {
-        document.querySelectorAll('.button__toggle_trunk:not(:checked)').forEach(el => el.checked = true);
-    };
-    const hideAll = () => {
-        document.querySelectorAll('.button__toggle_trunk:checked').forEach(el => el.checked = false);
-    };
+    const showAll = () => document.querySelectorAll('.button__toggle_trunk:not(:checked)').forEach(el => el.checked = true);
+    const hideAll = () => document.querySelectorAll('.button__toggle_trunk:checked').forEach(el => el.checked = false);
     const zoomPage = ev => EL_TREE.style.scale = +ev.target.value / 100;
 
     const scrollToElement = el => el?.scrollIntoView({
@@ -345,9 +343,9 @@ const changeView = (() => {
         inline: 'center',
     });
 
-    document.getElementById('id_search').addEventListener('input', searchPerson);
+    EL_SEARCH.addEventListener('input', searchPerson);
     EL_COUNTER.addEventListener('click', jumpToNextFound);
-    document.getElementById('id_input_show_all').addEventListener('input', toggleHideAll);
+    EL_SHOW_ALL_TOGGLE.addEventListener('input', toggleHideAll);
     document.getElementById('id_input_zoom').addEventListener('input', zoomPage);
 
     return {
@@ -381,7 +379,7 @@ const changeData = (() => {
     const makeImageElement = src => `
         <div tabindex=0 class='edit_person__image_wrapper'>
             <img src='${src}' class='edit_person__image'></img>
-            <button class='edit_person__delete_image button edit_person__button'>Delete</button>
+            <button class='edit_person__delete_image def_button'>Delete</button>
         </div>
         `;
 
@@ -405,7 +403,7 @@ const changeData = (() => {
                 input = `
                     <textarea
                         name='${fname}'
-                        rows='5'
+                        rows='2'
                         style='width: 100%;'
                         placeholder='${placeholder}'
                     >${escapeValue(prsn[fname], true)}</textarea>`;
