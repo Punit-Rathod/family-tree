@@ -56,16 +56,16 @@ main:active {
     display: none;
 }
 
-.groups {
+.relation_groups {
     display: none;
 }
 
-.group {
+.relation_group {
     padding-right: 1rem;
     border-top: 1px solid;
 }
 
-.group:last-child {
+.relation_group:last-child {
     border-top: none;
 }
 
@@ -163,7 +163,7 @@ body:has(#id_input_edit_mode:checked) {
     display: flex;
 }
 
-.person:has(.button__toggle_trunk:checked) ~ .groups {
+.person:has(.button__toggle_trunk:checked) ~ .relation_groups {
     display: flex;
 }
 

@@ -6,7 +6,6 @@ const DATABASE = {
 const rebuild = (() => {
 
     const buildMap = (tree, ppl) => {
-        ppl.clear();
         let prsn;
         for (let i = 0; i < tree.length; i++) {
             prsn = tree[i];
@@ -14,16 +13,16 @@ const rebuild = (() => {
                 'Duplicate id',
                 prsn,
             );
-            prsn.children = new Map();
+            prsn.relations = new Map();
             ppl.set(prsn.id, prsn);
         };
     };
 
-    const validate = (data, mapping) => {
+    const checkFields = (data, mapping) => {
 
         const err = (txt, prsn) => console.error(txt, prsn);
 
-        const validateRelation1 = prsn => {
+        const checkRelation1 = prsn => {
             if (!prsn.relation_1) return;
             !mapping.has(prsn.relation_1)
             && err(
@@ -32,7 +31,7 @@ const rebuild = (() => {
             );
         };
 
-        const validateRelation2 = prsn => {
+        const checkRelation2 = prsn => {
             if (!prsn.relation_2) return;
             !mapping.has(prsn.relation_2)
             && err(
@@ -41,18 +40,19 @@ const rebuild = (() => {
             );
         };
 
-        const validateIsPartner = prsn => {
+        const checkIsPartner = prsn => {
             prsn.is_partner = prsn.is_partner ? true: false;
         };
 
-        const validateSex = prsn => {
-            !['M', 'F'].includes(prsn.sex) && err(
+        const VALID_SEX_VALUES = ['M', 'F'];
+        const checkSex = prsn => {
+            !VALID_SEX_VALUES.includes(prsn.sex) && err(
                 'INVALID SEX',
                 prsn,
             );
         };
 
-        const validateDOB = prsn => {
+        const checkDOB = prsn => {
             if (!prsn.dob) return;
             (prsn.dob.length !== 10) && err(
                 'Invalid dob',
@@ -64,7 +64,7 @@ const rebuild = (() => {
             );
         };
 
-        const validateDOD = prsn => {
+        const checkDOD = prsn => {
             if (!prsn.dod) return;
             (prsn.dod.length !== 10) && err(
                 'Invalid dod',
@@ -79,12 +79,12 @@ const rebuild = (() => {
         let prsn;
         for (let i = 0; i < data.length; i++) {
             prsn = data[i];
-            validateRelation1(prsn);
-            validateRelation2(prsn);
-            validateIsPartner(prsn);
-            validateSex(prsn);
-            validateDOB(prsn);
-            validateDOD(prsn);
+            checkRelation1(prsn);
+            checkRelation2(prsn);
+            checkIsPartner(prsn);
+            checkSex(prsn);
+            checkDOB(prsn);
+            checkDOD(prsn);
         };
     };
 
@@ -102,7 +102,7 @@ const rebuild = (() => {
                 continue;
             };
 
-            const chldrn = r1.children;
+            const chldrn = r1.relations;
 
             if (prsn.is_partner) {
                 if (chldrn.has(prsn.id)) continue;
@@ -136,7 +136,7 @@ const rebuild = (() => {
 
         const renderPerson = prsn => {
 
-            const toggle_trunk = prsn.children?.size
+            const toggle_trunk = prsn.relations?.size
                 ? `
                     <label
                         style='
@@ -196,20 +196,20 @@ const rebuild = (() => {
 
         const renderBranch = prsn => {
 
-            const groups = prsn.children.size
-                ? [...prsn.children].map(([prtnr_id, childrn]) => {
+            const grps = prsn.relations.size
+                ? [...prsn.relations].map(([prtnr_id, rels]) => {
                     const items =  [
                         renderPartner(mapping.get(prtnr_id)),
-                        childrn.length
+                        rels.length
                             ? `
                             <div class='children'>
-                                ${childrn.map(renderBranch).join('')}
+                                ${rels.map(renderBranch).join('')}
                             </div>
                             `
                             : '',
                     ].join('')
                     return `
-                    <div class='group'>
+                    <div class='relation_group'>
                         ${items}
                     </div>`
                 }).join('')
@@ -218,8 +218,8 @@ const rebuild = (() => {
             return `
             <div class='trunk'>
                 ${renderPerson(prsn)}
-                ${groups
-                    ? `<div class='groups'>${groups}</div>`
+                ${grps
+                    ? `<div class='relation_groups'>${grps}</div>`
                     : ''
                 }
             </div>`;
@@ -230,8 +230,9 @@ const rebuild = (() => {
 
     return tree => {
         const ppl = DATABASE.people;
+        ppl.clear();
         buildMap(tree, ppl);
-        validate(tree, ppl);
+        checkFields(tree, ppl);
         tree.sort((a, b) => {
             return (a.dob > b.dob) ? 1 : -1
         });
@@ -524,10 +525,13 @@ const importExport = (() => {
             [...DATABASE.people.values()]
             .filter(obj => !obj.is_missing)
             .map(obj => {
+                if (DATABASE.people.get(obj.relation_1)?.is_missing) {
+                    obj.relation_1 = '';
+                };
                 if (DATABASE.people.get(obj.relation_2)?.is_missing) {
                     obj.relation_2 = '';
                 };
-                delete obj.children;
+                delete obj.relations;
                 return obj;
             })
         )
