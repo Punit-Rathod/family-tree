@@ -161,7 +161,6 @@ main:active {
 }
 
 body:not(:has(#id_input_edit_mode:checked)) {
-    --edit_form_pointer_events: none;
     --edit_form_element: none;
 }
 
@@ -183,7 +182,6 @@ body:not(:has(#id_input_edit_mode:checked)) {
     align-items: start;
     gap: 1rem;
     padding: 1rem;
-    pointer-events: var(--edit_form_pointer_events, auto);
 }
 
 .edit_person__field {
@@ -199,6 +197,10 @@ body:not(:has(#id_input_edit_mode:checked)) {
     padding-inline: .5rem
 }
 
+.edit_person__field .radio_option {
+    display: var(--edit_form_element);
+}
+
 .edit_person__field--drop_zone {
     display: flex;
     min-height: 2rem;
@@ -209,6 +211,9 @@ body:not(:has(#id_input_edit_mode:checked)) {
     border-radius: .5rem;
 }
 
+body:not(:has(#id_input_edit_mode:checked)) .edit_person__field:not([data-display_value]) {
+    display: none;
+}
 
 body:not(:has(#id_input_edit_mode:checked)) .edit_person__field[data-display_value]:after {
     content: attr(data-display_value);
@@ -262,12 +267,10 @@ body:not(:has(#id_input_edit_mode:checked)) .edit_person__field[data-display_val
     border: 5px solid red;
 }
 
-
 #id_data_search_count::before {
     display: inline;
     content: attr(data-current_person);
 }
-
 
 #id_data_search_count::after {
     display: inline;

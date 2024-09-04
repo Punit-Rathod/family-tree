@@ -422,7 +422,7 @@ const changeData = (() => {
             } else if (type === 'radio') {
                 input = options.map(
                     opt => `
-                        <label>
+                        <label class='radio_option'>
                             ${opt}
                             <input
                                 type='radio'
