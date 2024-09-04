@@ -388,17 +388,17 @@ const changeData = (() => {
         document.querySelector('.edit_person__id').innerHTML = `ID: ${prsn.id}`;
         document.querySelector('.edit_person__fields_wrapper').innerHTML = [
             {name: 'id', type: 'hidden'},
-            {name: 'name', type: 'text', label: 'Name'},
-            {name: 'sex', type: 'radio', label: 'Sex', options: ['M', 'F']},
-            {name: 'relation_1', type: 'text', label: 'Relation 1'},
-            {name: 'is_partner', type: 'checkbox', label: 'Relation 1 is partner'},
-            {name: 'relation_2', type: 'text', label: 'Relation 2'},
-            {name: 'dob', type: 'date', label: 'Date of birth'},
-            {name: 'dod', type: 'date', label: 'Date of death'},
+            {name: 'name', type: 'text', label: 'Name:'},
+            {name: 'sex', type: 'radio', label: 'Sex:', options: ['M', 'F']},
+            {name: 'relation_1', type: 'text', label: 'Relation 1 ID:'},
+            {name: 'is_partner', type: 'checkbox', label: 'Relation 1 is partner:'},
+            {name: 'relation_2', type: 'text', label: 'Relation 2 ID:'},
+            {name: 'dob', type: 'date', label: 'Date of birth:'},
+            {name: 'dod', type: 'date', label: 'Date of death:'},
             {
                 name: 'info',
                 type: 'textarea',
-                label: 'Information',
+                label: 'Information:',
                 style: `
                     width: 100%;
                     flex-direction: column;
