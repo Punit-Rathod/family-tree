@@ -210,7 +210,7 @@ body:has(#id_input_edit_mode:checked) {
 
 .edit_person__delete_image {
     display: var(
-        --edit_form_buttons
+        --edit_form_buttons,
         var(--image_controls_display, none)
     );
     margin-left: auto;

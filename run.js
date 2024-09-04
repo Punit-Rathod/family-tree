@@ -506,6 +506,7 @@ const changeData = (() => {
 const importExport = (() => {
 
     const importFile = async ev => {
+        document.querySelector('.tree').innerHTML = 'Loading please wait...';
         const file = ev.target.files[0];
         const split_file_name = file.name.split('.');
         let blob = file;
