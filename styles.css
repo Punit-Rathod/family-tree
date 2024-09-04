@@ -30,15 +30,11 @@ main:active {
     user-select: none;
 }
 
-
 .button {
     min-height: 2rem;
 }
 
-
-
-
-.tree {
+#id_tree {
     transform-origin: left top;
 }
 
@@ -60,7 +56,7 @@ main:active {
     border-top: none;
 }
 
-.tree > .trunk::before {
+#id_tree > .trunk::before {
     display: none;
 }
 

@@ -224,7 +224,8 @@ const rebuild = (() => {
             </div>`;
 
         };
-        document.querySelector('.tree').innerHTML = tree.map(renderBranch).join('');
+        document.getElementById('id_tree').innerHTML = tree.map(renderBranch).join('');
+        changeView.updateFoundCount(ppl.size);
     };
 
     return tree => {
@@ -246,6 +247,7 @@ const rebuild = (() => {
 const changeView = (() => {
 
     const CLSS_HIGHLIGHT = '--highlight';
+    const EL_TREE = document.getElementById('id_tree');
 
     (() => {
         let mouseDown = false;
@@ -287,16 +289,15 @@ const changeView = (() => {
         const str = document.getElementById('id_search').value.toLowerCase();
         if (!str) return showAll();
         const found = [];
-        DATABASE.people.forEach(obj => obj.name.toLowerCase().includes(str) && found.push(obj.id));
+        DATABASE.people.forEach(obj => obj.name?.toLowerCase().includes(str) && found.push(obj.id));
         const qry = found.map(id => `[data-id='${id}']`).join(',');
         if (!qry) return;
         document.getElementById('id_input_show_all').checked = false;
         hideAll();
-        const wrapper = document.querySelector('.tree');
-        const els = wrapper.querySelectorAll(qry);
+        const els = EL_TREE.querySelectorAll(qry);
         els.forEach(el => {
             el.classList.add(CLSS_HIGHLIGHT);
-            while (el !== wrapper) {
+            while (el !== EL_TREE) {
                 if (el.classList.contains('trunk')) {
                     const checkbox = el.querySelector(':scope > .person .button__toggle_trunk');
                     checkbox && (checkbox.checked = true);
@@ -304,6 +305,7 @@ const changeView = (() => {
                 el = el.parentNode;
             };
         });
+        updateFoundCount(els.length);
         els[0]?.scrollIntoView({
             behavior: 'smooth',
             block: 'center',
@@ -311,21 +313,22 @@ const changeView = (() => {
         });
     };
 
-    const toggleHideAll = ev => {
-        ev.target.checked
-            ? showAll()
-            : hideAll();
-    };
+    const updateFoundCount = count => document.getElementById('id_data_search_count').innerHTML = count;
+
+    const toggleHideAll = ev => (ev.target.checked ? showAll : hideAll)();
 
     const showAll = () => document.querySelectorAll('.button__toggle_trunk:not(:checked)').forEach(el => el.checked = true);
     const hideAll = () => document.querySelectorAll('.button__toggle_trunk:checked').forEach(el => el.checked = false);
-    const zoomPage = ev => document.querySelector('.tree').style.scale = +ev.target.value / 100;
+    const zoomPage = ev => EL_TREE.style.scale = +ev.target.value / 100;
 
     document.getElementById('id_search').addEventListener('input', searchPerson);
     document.getElementById('id_input_show_all').addEventListener('input', toggleHideAll);
     document.getElementById('id_input_zoom').addEventListener('input', zoomPage);
 
-    return {searchPerson}
+    return {
+        searchPerson,
+        updateFoundCount,
+    }
 
 })();
 
@@ -483,7 +486,7 @@ const changeData = (() => {
         elToRemove.remove();
     };
 
-    document.querySelector('.tree').addEventListener('click', ev => {
+    document.getElementById('id_tree').addEventListener('click', ev => {
         const el_person = ev.target.closest('.person');
         el_person && loadEditor(el_person.dataset.id);
     });
@@ -506,7 +509,7 @@ const changeData = (() => {
 const importExport = (() => {
 
     const importFile = async ev => {
-        document.querySelector('.tree').innerHTML = 'Loading please wait...';
+        document.getElementById('id_tree').innerHTML = 'Loading please wait...';
         const file = ev.target.files[0];
         const split_file_name = file.name.split('.');
         let blob = file;
