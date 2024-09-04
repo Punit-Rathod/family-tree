@@ -346,6 +346,8 @@ const escapeValue = (val, is_input=false) => {
 
 const changeData = (() => {
 
+    const EL_FORM = document.getElementById('id_form_edit_person');
+
     const changeLog = new Map();
 
     const makeImageElement = src => `
@@ -486,16 +488,17 @@ const changeData = (() => {
         el_person && loadEditor(el_person.dataset.id);
     });
 
-    document.getElementById('id_form_edit_person').addEventListener('beforetoggle', ev => {
+    EL_FORM.addEventListener('beforetoggle', ev => {
         const was_openned = ev.newState === 'open';
         document.querySelectorAll('header, main').forEach( el => el.inert = was_openned);
         was_openned && resetChanges();
     });
 
-    document.getElementById('id_form_edit_person').addEventListener('change', logChange);
+    EL_FORM.addEventListener('change', logChange);
     document.getElementById('id_button_edit_person_save').addEventListener('click', save);
     document.getElementById('id_input_add_image').addEventListener('input', addImage);
     document.querySelector('.edit_person__images').addEventListener('click', deleteImage);
+    document.getElementById('id_button_edit_person_close').addEventListener('click', () => EL_FORM.hidePopover());
 
 })();
 
