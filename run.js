@@ -225,7 +225,6 @@ const rebuild = (() => {
 
         };
         document.getElementById('id_tree').innerHTML = tree.map(renderBranch).join('');
-        changeView.updateFoundCount(ppl.size);
     };
 
     return tree => {
@@ -248,6 +247,7 @@ const changeView = (() => {
 
     const CLSS_HIGHLIGHT = '--highlight';
     const EL_TREE = document.getElementById('id_tree');
+    const EL_COUNTER = document.getElementById('id_data_search_count');
 
     (() => {
         let mouseDown = false;
@@ -284,12 +284,18 @@ const changeView = (() => {
         slider.addEventListener('mouseleave', stopDragging, false);
     })();
 
+    const getHighlightedPeople = () => document.querySelectorAll(`.${CLSS_HIGHLIGHT}`);
+
     const searchPerson = () => {
-        document.querySelectorAll(`.${CLSS_HIGHLIGHT}`).forEach(el => el.classList.remove(CLSS_HIGHLIGHT));
+        getHighlightedPeople().forEach(el => el.classList.remove(CLSS_HIGHLIGHT));
         const str = document.getElementById('id_search').value.toLowerCase();
-        if (!str) return showAll();
+        const ppl = DATABASE.people;
+        if (!str) {
+            updateFoundCount(ppl.size);
+            return showAll()
+        };
         const found = [];
-        DATABASE.people.forEach(obj => obj.name?.toLowerCase().includes(str) && found.push(obj.id));
+        ppl.forEach(obj => obj.name?.toLowerCase().includes(str) && found.push(obj.id));
         const qry = found.map(id => `[data-id='${id}']`).join(',');
         if (!qry) return;
         document.getElementById('id_input_show_all').checked = false;
@@ -306,29 +312,48 @@ const changeView = (() => {
             };
         });
         updateFoundCount(els.length);
-        els[0]?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'center',
-        });
+        scrollToElement(els[0]);
     };
 
-    const updateFoundCount = count => document.getElementById('id_data_search_count').innerHTML = count;
+    const jumpToNextFound = () => {
+        const max = +EL_COUNTER.dataset.total_people;
+        let current_idx = +EL_COUNTER.dataset.current_person;
+        (current_idx >= max) && (current_idx = 0);
+        console.log()
+        scrollToElement(getHighlightedPeople()[current_idx]);
+        EL_COUNTER.dataset.current_person = ++current_idx;
+    };
+
+    const updateFoundCount = count => {
+        EL_COUNTER.dataset.current_person = count ? 1 : 0;
+        EL_COUNTER.dataset.total_people = count;
+    };
 
     const toggleHideAll = ev => (ev.target.checked ? showAll : hideAll)();
 
-    const showAll = () => document.querySelectorAll('.button__toggle_trunk:not(:checked)').forEach(el => el.checked = true);
-    const hideAll = () => document.querySelectorAll('.button__toggle_trunk:checked').forEach(el => el.checked = false);
+    const showAll = () => {
+        document.querySelectorAll('.button__toggle_trunk:not(:checked)').forEach(el => el.checked = true);
+    };
+    const hideAll = () => {
+        document.querySelectorAll('.button__toggle_trunk:checked').forEach(el => el.checked = false);
+    };
     const zoomPage = ev => EL_TREE.style.scale = +ev.target.value / 100;
 
+    const scrollToElement = el => el?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+        inline: 'center',
+    });
+
     document.getElementById('id_search').addEventListener('input', searchPerson);
+    EL_COUNTER.addEventListener('click', jumpToNextFound);
     document.getElementById('id_input_show_all').addEventListener('input', toggleHideAll);
     document.getElementById('id_input_zoom').addEventListener('input', zoomPage);
 
     return {
         searchPerson,
         updateFoundCount,
-    }
+    };
 
 })();
 

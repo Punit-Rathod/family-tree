@@ -242,3 +242,15 @@ body:has(#id_input_edit_mode:checked) {
 .--highlight {
     border: 5px solid red;
 }
+
+
+#id_data_search_count::before {
+    display: inline;
+    content: attr(data-current_person);
+}
+
+
+#id_data_search_count::after {
+    display: inline;
+    content: attr(data-total_people);
+}

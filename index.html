@@ -10,11 +10,15 @@
 
     <body>
         <header>
-            <label class="header_field">
-                Search
-                <input type="search" id="id_search">
-                <div id="id_data_search_count"></div>
-            </label>
+            <div>
+                <label class="header_field">
+                    Search
+                    <input type="search" id="id_search">
+                </label>
+            </div>
+            <button id='id_data_search_count' data-current_person="0" data-total_people="0">
+                of
+            </button>
             <label class="header_field">
                 Show all
                 <input type="checkbox" id="id_input_show_all" checked>
