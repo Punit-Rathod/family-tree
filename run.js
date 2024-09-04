@@ -144,7 +144,7 @@ const rebuild = (() => {
 
         const renderPerson = prsn => {
 
-            const name = `<b>${prsn.is_missing ? '(Unknown)' : escapeValue(prsn.name)}</b>`;
+            const name = `<b>${prsn.is_missing ? '' : escapeValue(prsn.name)}</b>`;
 
             const toggle_trunk = prsn.relations?.size
                 ? `
