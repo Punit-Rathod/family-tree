@@ -88,6 +88,14 @@ const rebuild = (() => {
         };
     };
 
+    const makeNewId = ppl => {
+        let new_id = crypto.randomUUID();
+        while (ppl.get(new_id)) {
+            new_id = crypto.randomUUID();
+        };
+        return new_id;
+    };
+
     const buildTree = (tree, ppl) => {
         const len = tree.length
         let skip = -1;
@@ -110,14 +118,17 @@ const rebuild = (() => {
             };
 
             if (!prsn.relation_2) {
-                const missing = {
-                    id: crypto.randomUUID(),
-                    is_missing: true,
-                    relation_1: r1.id,
-                    is_partner: true,
-                    sex: r1.sex === 'M' ? 'F' : 'M',
+                let missing = ppl.get([...chldrn.keys()].find(key => ppl.get(key)?.is_missing));
+                if (!missing) {
+                    missing = {
+                        id: makeNewId(ppl),
+                        is_missing: true,
+                        relation_1: r1.id,
+                        is_partner: true,
+                        sex: r1.sex === 'M' ? 'F' : 'M',
+                    };
+                    ppl.set(missing.id, missing);
                 };
-                ppl.set(missing.id, missing);
                 prsn.relation_2 = missing.id;
             };
 
