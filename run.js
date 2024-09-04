@@ -1,20 +1,21 @@
 
-const ALL_PEOPLE = new Map();
-
+const DATABASE = {
+    people: new Map(),
+};
 
 const rebuild = (() => {
 
-    const buildMap = tree => {
-        ALL_PEOPLE.clear();
+    const buildMap = (tree, ppl) => {
+        ppl.clear();
         let prsn;
         for (let i = 0; i < tree.length; i++) {
             prsn = tree[i];
-            ALL_PEOPLE.has(prsn.id) && console.error(
+            ppl.has(prsn.id) && console.error(
                 'Duplicate id',
                 prsn,
             );
             prsn.children = new Map();
-            ALL_PEOPLE.set(prsn.id, prsn);
+            ppl.set(prsn.id, prsn);
         };
     };
 
@@ -228,18 +229,19 @@ const rebuild = (() => {
     };
 
     return tree => {
-        buildMap(tree);
-        validate(tree, ALL_PEOPLE);
+        const ppl = DATABASE.people;
+        buildMap(tree, ppl);
+        validate(tree, ppl);
         tree.sort((a, b) => {
             return (a.dob > b.dob) ? 1 : -1
         });
-        buildTree(tree, ALL_PEOPLE);
-        renderTree(tree, ALL_PEOPLE);
+        buildTree(tree, ppl);
+        renderTree(tree, ppl);
         changeView.searchPerson();
         localStorage.setItem(
             'data',
             JSON.stringify(
-                [...ALL_PEOPLE.values()]
+                [...ppl.values()]
             )
         );
     };
@@ -291,7 +293,7 @@ const changeView = (() => {
         const str = document.getElementById('id_search').value.toLowerCase();
         if (!str) return showAll();
         const found = [];
-        ALL_PEOPLE.forEach(obj => obj.name.toLowerCase().includes(str) && found.push(obj.id));
+        DATABASE.people.forEach(obj => obj.name.toLowerCase().includes(str) && found.push(obj.id));
         const qry = found.map(id => `[data-id='${id}']`).join(',');
         if (!qry) return;
         document.getElementById('id_input_show_all').checked = false;
@@ -360,7 +362,7 @@ const dataChanges = (() => {
         `;
 
     const loadEditor = id => {
-        const prsn = ALL_PEOPLE.get(id);
+        const prsn = DATABASE.people.get(id);
         document.querySelector('.edit_person__id').innerHTML = `ID: ${prsn.id}`;
         document.querySelector('.edit_person__fields_wrapper').innerHTML = [
             {name: 'id', type: 'hidden'},
@@ -436,16 +438,16 @@ const dataChanges = (() => {
 
     const save = ev => {
         ev.preventDefault();
-        const prsn = ALL_PEOPLE.get(changeLog.get('id'));
+        const prsn = DATABASE.people.get(changeLog.get('id'));
         if (!prsn) return;
         changeLog.delete('id');
         changeLog.forEach((val, field) => prsn[field] = val);
-        rebuild([...ALL_PEOPLE.values()]);
+        rebuild([...DATABASE.people.values()]);
         resetChanges();
     };
 
     const modifyStoredImages = func => {
-        const prsn = ALL_PEOPLE.get(getFormData().id);
+        const prsn = DATABASE.people.get(getFormData().id);
         if (!prsn) return;
         changeLog.set('id', prsn.id);
         const imgs = (
@@ -525,10 +527,10 @@ const importExport = (() => {
     const exportFile = async () => {
 
         const jsonString = JSON.stringify(
-            [...ALL_PEOPLE.values()]
+            [...DATABASE.people.values()]
             .filter(obj => !obj.is_missing)
             .map(obj => {
-                if (ALL_PEOPLE.get(obj.relation_2)?.is_missing) {
+                if (DATABASE.people.get(obj.relation_2)?.is_missing) {
                     obj.relation_2 = '';
                 };
                 delete obj.children;
