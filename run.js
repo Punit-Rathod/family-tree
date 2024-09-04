@@ -345,19 +345,28 @@ const changeView = (() => {
 
     const toggleHideAll = ev => (ev.target.checked ? showAll : hideAll)();
 
+    const getSubTree = (els, qry) => els.length
+        ? [...els].map(el => [...el.parentElement.querySelectorAll(qry)]).flat()
+        : document.querySelectorAll(qry);
+
     const showAll = () => {
-        document.querySelectorAll('.button__toggle_trunk:not(:checked)').forEach(el => el.checked = true);
-        scrollToElement(
-            getHighlightedPeople()[+EL_COUNTER.dataset.current_person - 1],
-            {
-                behavior: 'instant',
-            }
-        );
+        const els = getHighlightedPeople();
+        getSubTree(els, '.button__toggle_trunk:not(:checked)').forEach(el => el.checked = true);
+        scrollToCurrentHighlighted(els);
     };
     const hideAll = () => {
-        document.querySelectorAll('.button__toggle_trunk:checked').forEach(el => el.checked = false);
+        const els = getHighlightedPeople();
+        getSubTree(els, '.button__toggle_trunk:checked').forEach(el => el.checked = false);
+        scrollToCurrentHighlighted(els);
     };
     const zoomPage = ev => EL_TREE.style.scale = +ev.target.value / 100;
+
+    const scrollToCurrentHighlighted = els => scrollToElement(
+        els[+EL_COUNTER.dataset.current_person - 1],
+        {
+            behavior: 'instant',
+        }
+    );
 
     const scrollToElement = (el, props={}) => el?.scrollIntoView({
         behavior: 'smooth',
