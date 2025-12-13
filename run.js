@@ -674,15 +674,13 @@ const importExport = (() => {
         if (evCache.length === 2) {
             // Calculate the distance between the two pointers
             const curDiff = Math.abs(evCache[0].clientX - evCache[1].clientX);
-            // Only zoom if change is more than a certain tolerance
-            if (curDiff > 5) {
-                if (prevDiff > 0) {
-                    el_zoom.value = +el_zoom.value + ((curDiff > prevDiff) ? -1 : 1);
-                    style.scale = +el_zoom.value / 100;
-                };
-                // Cache the distance for the next move event
-                prevDiff = curDiff;
+            if (prevDiff > 0) {
+                // el_zoom.value = +el_zoom.value + ((curDiff > prevDiff) ? -1 : 1);
+                el_zoom.value = (curDiff / 10) * ((curDiff > prevDiff) ? -1 : 1);
+                style.scale = +el_zoom.value / 100;
             };
+            // Cache the distance for the next move event
+            prevDiff = curDiff;
         };
     };
 
