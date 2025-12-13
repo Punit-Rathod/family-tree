@@ -654,13 +654,14 @@ const importExport = (() => {
     const evCache = [];
     let prevDiff = -1;
     const el_zoom = document.getElementById('id_input_zoom');
-    let initialZoom = el_zoom.value;
+    let initialZoom;
     const style = document.getElementById('id_tree').style;
 
     const pointerdownHandler = ev => {
         // The pointerdown event signals the start of a touch interaction.
         // This event is cached to support 2-finger gestures
         evCache.push(ev);
+        initialZoom = el_zoom.value;
     };
 
     const pointermoveHandler = ev => {
