@@ -120,7 +120,10 @@ const rebuild = (() => {
             };
 
             if (!prsn.relation_2) {
-                let missing = ppl.get([...chldrn.keys()].find(key => ppl.get(key)?.is_missing));
+                let missing = ppl.get(
+                    [...chldrn.keys()]
+                    .find(key => ppl.get(key)?.is_missing)
+                );
                 if (!missing) {
                     missing = {
                         id: makeNewId(),
@@ -237,6 +240,7 @@ const rebuild = (() => {
             </div>`;
 
         };
+
         document.getElementById('id_tree').innerHTML = tree.map(renderBranch).join('');
     };
 
@@ -520,6 +524,7 @@ const changeData = (() => {
             DATABASE.people.set(id, {id});
             prsn = DATABASE.people.get(id);
         };
+        prsn.is_missing = false;
         changeLog.delete('id');
         changeLog.forEach((val, field) => prsn[field] = val);
         rebuild([...DATABASE.people.values()]);
@@ -600,9 +605,7 @@ const importExport = (() => {
             const decompressedStream = file.stream().pipeThrough(decompressionStream);
             blob = await new Response(decompressedStream).blob();
         };
-        rebuild(
-            JSON.parse(await blob.text())
-        );
+        rebuild(JSON.parse(await blob.text()));
         ev.target.value = '';
     };
 
