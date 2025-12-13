@@ -649,67 +649,85 @@ const importExport = (() => {
 
 
 // Pinch zoom handler
-(() => {
+// (() => {
 
-    const evCache = [];
-    let prevDiff = -1;
-    const el_zoom = document.getElementById('id_input_zoom');
-    let initialZoom;
-    const style = document.getElementById('id_tree').style;
+//     const evCache = [];
+//     let prevDiff = -1;
+//     const el_zoom = document.getElementById('id_input_zoom');
+//     let initialZoom;
+//     let cumulativeDiff = 0;
+//     const style = document.getElementById('id_tree').style;
 
-    const pointerdownHandler = ev => {
-        // The pointerdown event signals the start of a touch interaction.
-        // This event is cached to support 2-finger gestures
-        evCache.push(ev);
-        initialZoom = el_zoom.value;
-    };
+//     const pointerdownHandler = ev => {
+//         // The pointerdown event signals the start of a touch interaction.
+//         // This event is cached to support 2-finger gestures
+//         evCache.push(ev);
+//         initialZoom = el_zoom.value;
+//         cumulativeDiff = 0;
+//     };
 
-    const pointermoveHandler = ev => {
-        // This function implements a 2-pointer horizontal pinch/zoom gesture.
+//     const pointermoveHandler = ev => {
+//         // This function implements a 2-pointer horizontal pinch/zoom gesture.
 
-        // Find this event in the cache and update its record with this event
-        const index = evCache.findIndex(
-            cachedEv => cachedEv.pointerId === ev.pointerId,
-        );
-        evCache[index] = ev;
-        // If two pointers are down, check for pinch gestures
-        if (evCache.length === 2) {
-            // Calculate the distance between the two pointers
-            const curDiff = Math.abs(evCache[0].clientX - evCache[1].clientX);
-            if (prevDiff > 0) {
-                // el_zoom.value = +el_zoom.value + ((curDiff > prevDiff) ? -1 : 1);
-                el_zoom.value = initialZoom + (curDiff * ((curDiff > prevDiff) ? -1 : 1));
-                style.scale = +el_zoom.value / 100;
-            };
-            // Cache the distance for the next move event
-            prevDiff = curDiff;
-        };
-    };
+//         // Find this event in the cache and update its record with this event
+//         const index = evCache.findIndex(
+//             cachedEv => cachedEv.pointerId === ev.pointerId,
+//         );
+//         evCache[index] = ev;
+//         // If two pointers are down, check for pinch gestures
+//         if (evCache.length === 2) {
+//             // Calculate the distance between the two pointers
+//             const curDiff = Math.abs(evCache[0].clientX - evCache[1].clientX);
+//             // cumulativeDiff += (curDiff - prevDiff);
+//             if (prevDiff > 0) {
+//                 el_zoom.value = +el_zoom.value + ((curDiff > prevDiff) ? -1 : 1);
+//                 // el_zoom.value = initialZoom + (curDiff * ((curDiff > prevDiff) ? -1 : 1));
+//                 style.scale = +el_zoom.value / 100;
+//             };
+//             // Cache the distance for the next move event
+//             prevDiff = curDiff;
+//         };
+//     };
 
-    const pointerupHandler = ev => {
-        removeEvent(ev);
-        // If the number of pointers down is less than two then reset diff tracker
-        if (evCache.length < 2) {
-            prevDiff = -1;
-        };
-    };
+//     const pointerupHandler = ev => {
+//         removeEvent(ev);
+//         // If the number of pointers down is less than two then reset diff tracker
+//         if (evCache.length < 2) {
+//             prevDiff = -1;
+//         };
+//     };
 
-    const removeEvent = ev => {
-        // Remove this event from the target's cache
-        const index = evCache.findIndex(
-            (cachedEv) => cachedEv.pointerId === ev.pointerId,
-        );
-        evCache.splice(index, 1);
-    };
+//     const removeEvent = ev => {
+//         // Remove this event from the target's cache
+//         const index = evCache.findIndex(
+//             (cachedEv) => cachedEv.pointerId === ev.pointerId,
+//         );
+//         evCache.splice(index, 1);
+//     };
 
-    const el = document.querySelector("main");
-    el.onpointerdown = pointerdownHandler;
-    el.onpointermove = pointermoveHandler;
+//     const el = document.querySelector("main");
+//     el.onpointerdown = pointerdownHandler;
+//     el.onpointermove = pointermoveHandler;
 
-    // Use same handler for pointer{up,cancel,out,leave} events since
-    // the semantics for these events - in this app - are the same.
-    el.onpointerup = pointerupHandler;
-    el.onpointercancel = pointerupHandler;
-    el.onpointerout = pointerupHandler;
-    el.onpointerleave = pointerupHandler;
-})();
+//     // Use same handler for pointer{up,cancel,out,leave} events since
+//     // the semantics for these events - in this app - are the same.
+//     el.onpointerup = pointerupHandler;
+//     el.onpointercancel = pointerupHandler;
+//     el.onpointerout = pointerupHandler;
+//     el.onpointerleave = pointerupHandler;
+
+//     // el.addEventListener('wheel', function (e) {
+//     //     // Prevent default browser zoom behavior
+//     //     e.preventDefault();
+
+//     //     // Check for Ctrl (Windows/Linux) or Meta (Mac) key to confirm it's a zoom gesture
+//     //     if (e.ctrlKey || e.metaKey) {
+//     //         const zoomAmount = e.deltaY; // or e.deltaY for vertical zoom
+//     //         console.log('Pinch Zoom detected! DeltaY:', zoomAmount);
+//     //         // Update scale/zoom level here (e.g., scale = scale * (1 + zoomAmount/factor))
+//     //     }
+//     // }, {
+//     //     passive: false
+//     // });
+
+// })();
