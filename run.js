@@ -664,43 +664,30 @@ const importExport = (() => {
 
     const pointermoveHandler = ev => {
         // This function implements a 2-pointer horizontal pinch/zoom gesture.
-        //
-        // If the distance between the two pointers has increased (zoom in),
-        // the target element's background is changed to "pink" and if the
-        // distance is decreasing (zoom out), the color is changed to "lightblue".
 
         // Find this event in the cache and update its record with this event
         const index = evCache.findIndex(
             cachedEv => cachedEv.pointerId === ev.pointerId,
         );
         evCache[index] = ev;
-
         // If two pointers are down, check for pinch gestures
         if (evCache.length === 2) {
             // Calculate the distance between the two pointers
             const curDiff = Math.abs(evCache[0].clientX - evCache[1].clientX);
-
-            if (prevDiff > 0) {
-                if (curDiff > prevDiff) {
-                    // The distance between the two pointers has increased
-                    el_zoom.value = +el_zoom.value - 1;
+            // Only zoom if change is more than a certain tolerance
+            if (curDiff > 5) {
+                if (prevDiff > 0) {
+                    el_zoom.value = +el_zoom.value + ((curDiff > prevDiff) ? -1 : 1);
+                    style.scale = +el_zoom.value / 100;
                 };
-                if (curDiff < prevDiff) {
-                    // The distance between the two pointers has decreased
-                    el_zoom.value = +el_zoom.value + 1;
-                };
-                style.scale = +el_zoom.value / 100;
+                // Cache the distance for the next move event
+                prevDiff = curDiff;
             };
-
-            // Cache the distance for the next move event
-            prevDiff = curDiff;
         };
     };
 
     const pointerupHandler = ev => {
         removeEvent(ev);
-        // ev.target.style.background = "white";
-        // ev.target.style.border = "1px solid black";
         // If the number of pointers down is less than two then reset diff tracker
         if (evCache.length < 2) {
             prevDiff = -1;
@@ -713,11 +700,9 @@ const importExport = (() => {
             (cachedEv) => cachedEv.pointerId === ev.pointerId,
         );
         evCache.splice(index, 1);
-    }
+    };
 
-
-
-    const el = document.getElementById("id_tree");
+    const el = document.querySelector("main");
     el.onpointerdown = pointerdownHandler;
     el.onpointermove = pointermoveHandler;
 
