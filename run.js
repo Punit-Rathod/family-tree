@@ -654,6 +654,7 @@ const importExport = (() => {
     const evCache = [];
     let prevDiff = -1;
     const el_zoom = document.getElementById('id_input_zoom');
+    let initialZoom = el_zoom.value;
     const style = document.getElementById('id_tree').style;
 
     const pointerdownHandler = ev => {
@@ -676,7 +677,7 @@ const importExport = (() => {
             const curDiff = Math.abs(evCache[0].clientX - evCache[1].clientX);
             if (prevDiff > 0) {
                 // el_zoom.value = +el_zoom.value + ((curDiff > prevDiff) ? -1 : 1);
-                el_zoom.value = (curDiff / 10) * ((curDiff > prevDiff) ? -1 : 1);
+                el_zoom.value = initialZoom + (curDiff * ((curDiff > prevDiff) ? -1 : 1));
                 style.scale = +el_zoom.value / 100;
             };
             // Cache the distance for the next move event
