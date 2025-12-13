@@ -35,23 +35,23 @@ const rebuild = (() => {
         const checkRelation1 = prsn => {
             if (!prsn.relation_1) return;
             !ppl.has(prsn.relation_1)
-            && err(
-                'Incorrect relation_1',
-                prsn,
-            );
+                && err(
+                    'Incorrect relation_1',
+                    prsn,
+                );
         };
 
         const checkRelation2 = prsn => {
             if (!prsn.relation_2) return;
             !ppl.has(prsn.relation_2)
-            && err(
-                'Incorrect relation_2',
-                prsn,
-            );
+                && err(
+                    'Incorrect relation_2',
+                    prsn,
+                );
         };
 
         const checkIsPartner = prsn => {
-            prsn.is_partner = prsn.is_partner ? true: false;
+            prsn.is_partner = prsn.is_partner ? true : false;
         };
 
         const VALID_SEX_VALUES = ['M', 'F'];
@@ -122,7 +122,7 @@ const rebuild = (() => {
             if (!prsn.relation_2) {
                 let missing = ppl.get(
                     [...chldrn.keys()]
-                    .find(key => ppl.get(key)?.is_missing)
+                        .find(key => ppl.get(key)?.is_missing)
                 );
                 if (!missing) {
                     missing = {
@@ -173,9 +173,9 @@ const rebuild = (() => {
                             class='person__image'>
                         </img>
                         ${(img_count > 1)
-                            ? `<div class='person__image_count'>${img_count}</div>`
-                            : ''
-                        }
+                    ? `<div class='person__image_count'>${img_count}</div>`
+                    : ''
+                }
                     </div>
                     `
                 : '';
@@ -213,7 +213,7 @@ const rebuild = (() => {
 
             const grps = prsn.relations.size
                 ? [...prsn.relations].map(([prtnr_id, rels]) => {
-                    const items =  [
+                    const items = [
                         renderPartner(ppl.get(prtnr_id)),
                         rels.length
                             ? `
@@ -287,7 +287,7 @@ const changeView = (() => {
 
         const move = ev => {
             ev.preventDefault();
-            if(!mouseDown) { return; }
+            if (!mouseDown) { return; }
             const x = ev.pageX - slider.offsetLeft;
             const y = ev.pageY - slider.offsetTop;
             const scrollX = x - startX;
@@ -372,7 +372,7 @@ const changeView = (() => {
         }
     );
 
-    const scrollToElement = (el, props={}) => el?.scrollIntoView({
+    const scrollToElement = (el, props = {}) => el?.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
         inline: 'center',
@@ -392,7 +392,7 @@ const changeView = (() => {
 })();
 
 
-const escapeValue = (val, is_input=false) => {
+const escapeValue = (val, is_input = false) => {
     if (
         (val === null)
         || (val === undefined)
@@ -422,14 +422,14 @@ const changeData = (() => {
     const loadEditor = prsn => {
         document.querySelector('.edit_person__id').innerHTML = `ID: ${prsn.id}`;
         document.querySelector('.edit_person__fields_wrapper').innerHTML = [
-            {name: 'id', type: 'hidden'},
-            {name: 'name', type: 'text', label: 'Name:'},
-            {name: 'sex', type: 'radio', label: 'Sex:', options: ['M', 'F']},
-            {name: 'relation_1', type: 'text', label: 'Relation 1 ID:'},
-            {name: 'is_partner', type: 'checkbox', label: 'Relation 1 is partner:'},
-            {name: 'relation_2', type: 'text', label: 'Relation 2 ID:'},
-            {name: 'dob', type: 'date', label: 'Date of birth:'},
-            {name: 'dod', type: 'date', label: 'Date of death:'},
+            { name: 'id', type: 'hidden' },
+            { name: 'name', type: 'text', label: 'Name:' },
+            { name: 'sex', type: 'radio', label: 'Sex:', options: ['M', 'F'] },
+            { name: 'relation_1', type: 'text', label: 'Relation 1 ID:' },
+            { name: 'is_partner', type: 'checkbox', label: 'Relation 1 is partner:' },
+            { name: 'relation_2', type: 'text', label: 'Relation 2 ID:' },
+            { name: 'dob', type: 'date', label: 'Date of birth:' },
+            { name: 'dod', type: 'date', label: 'Date of death:' },
             {
                 name: 'info',
                 type: 'textarea',
@@ -441,7 +441,7 @@ const changeData = (() => {
                     gap: .5rem;
                     `,
             },
-        ].map(({name:fname, type='', label='', options, style=''}) => {
+        ].map(({ name: fname, type = '', label = '', options, style = '' }) => {
 
             const val = prsn[fname];
             const escp_val = escapeValue(val, true);
@@ -463,7 +463,7 @@ const changeData = (() => {
                                 type='radio'
                                 name='${fname}'
                                 value="${escapeValue(opt, true)}"
-                                ${val === opt ? 'checked' :''}
+                                ${val === opt ? 'checked' : ''}
                             >
                         </label>`
                 ).join('');
@@ -521,7 +521,7 @@ const changeData = (() => {
         if (!id) return;
         let prsn = DATABASE.people.get(id);
         if (!prsn) {
-            DATABASE.people.set(id, {id});
+            DATABASE.people.set(id, { id });
             prsn = DATABASE.people.get(id);
         };
         prsn.is_missing = false;
@@ -579,7 +579,7 @@ const changeData = (() => {
 
     EL_FORM.addEventListener('beforetoggle', ev => {
         const was_openned = ev.newState === 'open';
-        document.querySelectorAll('header, main').forEach( el => el.inert = was_openned);
+        document.querySelectorAll('header, main').forEach(el => el.inert = was_openned);
         was_openned && resetChanges();
     });
 
@@ -613,17 +613,17 @@ const importExport = (() => {
 
         const jsonString = JSON.stringify(
             [...DATABASE.people.values()]
-            .filter(obj => !obj.is_missing)
-            .map(obj => {
-                if (DATABASE.people.get(obj.relation_1)?.is_missing) {
-                    obj.relation_1 = '';
-                };
-                if (DATABASE.people.get(obj.relation_2)?.is_missing) {
-                    obj.relation_2 = '';
-                };
-                delete obj.relations;
-                return obj;
-            })
+                .filter(obj => !obj.is_missing)
+                .map(obj => {
+                    if (DATABASE.people.get(obj.relation_1)?.is_missing) {
+                        obj.relation_1 = '';
+                    };
+                    if (DATABASE.people.get(obj.relation_2)?.is_missing) {
+                        obj.relation_2 = '';
+                    };
+                    delete obj.relations;
+                    return obj;
+                })
         )
 
         const blob = new Blob([jsonString], {
@@ -647,3 +647,84 @@ const importExport = (() => {
 
 })();
 
+
+// Pinch zoom handler
+(() => {
+
+    const evCache = [];
+    let prevDiff = -1;
+    const el_zoom = document.getElementById('id_input_zoom');
+    const style = document.getElementById('id_tree').style;
+
+    const pointerdownHandler = ev => {
+        // The pointerdown event signals the start of a touch interaction.
+        // This event is cached to support 2-finger gestures
+        evCache.push(ev);
+    };
+
+    const pointermoveHandler = ev => {
+        // This function implements a 2-pointer horizontal pinch/zoom gesture.
+        //
+        // If the distance between the two pointers has increased (zoom in),
+        // the target element's background is changed to "pink" and if the
+        // distance is decreasing (zoom out), the color is changed to "lightblue".
+
+        // Find this event in the cache and update its record with this event
+        const index = evCache.findIndex(
+            cachedEv => cachedEv.pointerId === ev.pointerId,
+        );
+        evCache[index] = ev;
+
+        // If two pointers are down, check for pinch gestures
+        if (evCache.length === 2) {
+            // Calculate the distance between the two pointers
+            const curDiff = Math.abs(evCache[0].clientX - evCache[1].clientX);
+
+            if (prevDiff > 0) {
+                if (curDiff > prevDiff) {
+                    // The distance between the two pointers has increased
+                    el_zoom.value = +el_zoom.value - 1;
+                };
+                if (curDiff < prevDiff) {
+                    // The distance between the two pointers has decreased
+                    el_zoom.value = +el_zoom.value + 1;
+                };
+                style.scale = +el_zoom.value / 100;
+            };
+
+            // Cache the distance for the next move event
+            prevDiff = curDiff;
+        };
+    };
+
+    const pointerupHandler = ev => {
+        removeEvent(ev);
+        // ev.target.style.background = "white";
+        // ev.target.style.border = "1px solid black";
+        // If the number of pointers down is less than two then reset diff tracker
+        if (evCache.length < 2) {
+            prevDiff = -1;
+        };
+    };
+
+    const removeEvent = ev => {
+        // Remove this event from the target's cache
+        const index = evCache.findIndex(
+            (cachedEv) => cachedEv.pointerId === ev.pointerId,
+        );
+        evCache.splice(index, 1);
+    }
+
+
+
+    const el = document.getElementById("id_tree");
+    el.onpointerdown = pointerdownHandler;
+    el.onpointermove = pointermoveHandler;
+
+    // Use same handler for pointer{up,cancel,out,leave} events since
+    // the semantics for these events - in this app - are the same.
+    el.onpointerup = pointerupHandler;
+    el.onpointercancel = pointerupHandler;
+    el.onpointerout = pointerupHandler;
+    el.onpointerleave = pointerupHandler;
+})();
