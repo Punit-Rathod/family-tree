@@ -56,7 +56,6 @@ main:active {
 
 #id_tree {
     transform-origin: left top;
-    touch-action: manipulation;
 }
 
 .trunk {
