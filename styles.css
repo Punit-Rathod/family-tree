@@ -55,6 +55,8 @@ main:active {
 
 
 #id_tree {
+    display: flex;
+    gap: 2rem;
     transform-origin: left top;
 }
 
@@ -72,6 +74,7 @@ main:active {
     border-left: 1px solid;
 }
 
+#id_tree > .trunk,
 .trunk:last-child {
     border-top: none;
 }
@@ -124,8 +127,6 @@ main:active {
 .trunk:has(> .children) > .person {
     border-bottom: 1px solid;
 }
-
-
 
 .relation_groups {
     display: none;

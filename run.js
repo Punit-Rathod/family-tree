@@ -99,7 +99,8 @@ const rebuild = (() => {
     };
 
     const buildTree = (tree, ppl) => {
-        const len = tree.length
+        const len = tree.length;
+        if (!len) return;
         let skip = -1;
         for (let i = len - 1; i >= skip; i--) {
             const prsn = tree.pop();
@@ -289,11 +290,12 @@ const changeData = (() => {
         `;
 
     const loadEditor = prsn => {
+        resetChanges();
         document.querySelector('.edit_person__id').innerHTML = `ID: ${prsn.id}`;
         document.querySelector('.edit_person__fields_wrapper').innerHTML = [
             { name: 'id', type: 'hidden' },
             { name: 'name', type: 'text', label: 'Name:' },
-            { name: 'sex', type: 'radio', label: 'Sex:', options: ['M', 'F'] },
+            { name: 'sex', type: 'radio', label: 'Sex:', options: ['M', 'F']},
             { name: 'relation_1', type: 'text', label: 'Relation 1 ID:' },
             { name: 'is_partner', type: 'checkbox', label: 'Relation 1 is partner:' },
             { name: 'relation_2', type: 'text', label: 'Relation 2 ID:' },
@@ -310,11 +312,9 @@ const changeData = (() => {
                     gap: .5rem;
                     `,
             },
-        ].map(({ name: fname, type = '', label = '', options, style = '' }) => {
-
+        ].map(({ name: fname, type = '', label = '', options, style = ''}) => {
             const val = prsn[fname];
             const escp_val = escapeValue(val, true);
-
             let input;
             if (type === 'textarea') {
                 input = `
@@ -336,6 +336,13 @@ const changeData = (() => {
                             >
                         </label>`
                 ).join('');
+            } else if (type === 'checkbox') {
+                input = `
+                    <input
+                        type='${type}'
+                        name='${fname}'
+                        ${val ? 'checked' : ''}
+                    >`;
             } else {
                 input = `
                     <input
@@ -356,16 +363,16 @@ const changeData = (() => {
                 </label>
                 `;
         }).join('');
-
         document.querySelector('.edit_person__images').innerHTML = (prsn.images || []).map(makeImageElement).join('')
-
     };
 
     const resetChanges = () => changeLog.clear();
 
-    const getFormData = () => Object.fromEntries(new FormData(
-        document.getElementById('id_form_edit_person')
-    ));
+    const getFormData = () => {
+        const el = document.getElementById('id_form_edit_person');
+        if (!el) return {};
+        return Object.fromEntries(new FormData(el));
+    };
 
     const logChange = ev => {
         const field_name = ev.target.name;
@@ -374,14 +381,14 @@ const changeData = (() => {
         changeLog.set(field_name, fields[field_name]);
     };
 
-    const addRelation = ev => {
-        resetChanges();
-        const relation_1 = getFormData().id;
-        changeLog.set('relation_1', relation_1);
-        relation_1 && loadEditor({
+    const addRelation = () => {
+        const props = {
             id: makeNewId(),
-            relation_1,
-        });
+            sex: 'M',
+            relation_1: getFormData()?.id,
+        };
+        loadEditor(props);
+        Object.entries(props).forEach(([key, val]) => changeLog.set(key, val));
     };
 
     const save = ev => {
@@ -447,12 +454,12 @@ const changeData = (() => {
     });
 
     EL_FORM.addEventListener('beforetoggle', ev => {
-        const was_openned = ev.newState === 'open';
+        const was_openned = (ev.newState === 'open');
         document.querySelectorAll('header, main').forEach(el => el.inert = was_openned);
-        was_openned && resetChanges();
     });
 
     EL_FORM.addEventListener('change', logChange);
+    document.getElementById('id_add_person').addEventListener('click', addRelation);
     document.getElementById('id_button_add_relation').addEventListener('click', addRelation);
     document.getElementById('id_button_edit_person_save').addEventListener('click', save);
     document.getElementById('id_input_add_image').addEventListener('input', addImage);
@@ -513,9 +520,7 @@ const importExport = (() => {
 
     document.getElementById('id_input_upload_date').addEventListener('input', importFile);
     document.getElementById('id_button_export').addEventListener('click', exportFile);
-
 })();
-
 
 
 const changeView = (() => {
@@ -527,10 +532,7 @@ const changeView = (() => {
     const EL_MAIN = document.querySelector('main');
     const EL_ZOOM = document.getElementById('id_input_zoom');
     const EL_TREE = document.getElementById('id_tree');
-
-
     let currentScale = +EL_ZOOM.value / 100;
-
 
     // DRAG
     (() => {
@@ -739,3 +741,6 @@ const changeView = (() => {
     };
 
 })();
+
+
+// rebuild([]);

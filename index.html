@@ -27,13 +27,15 @@
                 Zoom
                 <input type="range" id="id_input_zoom" name="zoom" min="10" max="100" value="100"/>
             </label>
+            <button
+                id='id_add_person'
+                popovertarget='id_form_edit_person'
+            >
+                + Person
+            </button>
             <label class="header_field">
                 Load data
                 <input id="id_input_upload_date" type="file" class="--hide">
-            </label>
-            <label class="header_field">
-                Edit mode
-                <input type="checkbox" id="id_input_edit_mode">
             </label>
             <button id='id_button_export'>
                 Export tree
@@ -42,20 +44,39 @@
 
         <main>
             <section id="id_tree">
-                Data not loaded
+                <ul>
+                    <li>
+                        Click + Person to start a new tree
+                    </li>
+                    <li>
+                        Click load data to import a tree
+                    </li>
+                </ul>
             </section>
         </main>
 
         <form id='id_form_edit_person' popover onsubmit="return false;">
             <div
-                class="edit_person__id"
                 style="
                     display: flex;
                     justify-content: center;
                     padding: .5rem;
+                    gap: 1rem;
                     background-color: cadetblue;
                 "
             >
+                <span
+                    class="edit_person__id"
+                    style="
+                        display: flex;
+                        align-items: center;
+                    "
+                >
+                </span>
+                <label class="header_field">
+                    Edit mode
+                    <input type="checkbox" id="id_input_edit_mode">
+                </label>
             </div>
             <div class="edit_person__fields_wrapper">
             </div>
