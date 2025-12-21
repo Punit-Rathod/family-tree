@@ -98,33 +98,38 @@ const rebuild = (() => {
         };
     };
 
+    const sortTree = (a, b) => {
+        return (a.dob > b.dob) ? 1 : -1
+    };
+
     const buildTree = (tree, ppl) => {
-        const len = tree.length;
+        let len = tree.length;
         if (!len) return;
         let skip = -1;
-        for (let i = len - 1; i >= skip; i--) {
+        for (; len >= skip; len--) {
             const prsn = tree.pop();
+            // If no relation, move to start of tree for new trunk
             const r1 = ppl.get(prsn.relation_1);
-
             if (!r1) {
                 ++skip;
                 tree.unshift(prsn);
                 continue;
             };
-
             const chldrn = r1.relations;
-
+            // Add children key to partner
             if (prsn.is_partner) {
-                if (chldrn.has(prsn.id)) continue;
-                chldrn.set(prsn.id, []);
+                chldrn.has(prsn.id)
+                || chldrn.set(prsn.id, []);
                 continue;
             };
 
+            // Get or create and set missing parent
             if (!prsn.relation_2) {
                 let missing = ppl.get(
                     [...chldrn.keys()]
                         .find(key => ppl.get(key)?.is_missing)
                 );
+                // Create missing partner if they don't exist
                 if (!missing) {
                     missing = {
                         id: makeNewId(),
@@ -137,7 +142,6 @@ const rebuild = (() => {
                 };
                 prsn.relation_2 = missing.id;
             };
-
             const r2_id = prsn.relation_2;
             if (!chldrn.has(r2_id)) {
                 chldrn.set(r2_id, [])
@@ -188,10 +192,12 @@ const rebuild = (() => {
                         ${prsn.dob || '?'}${prsn.dod ? ` &rarr; ${prsn.dod}` : ''}
                     </small>`
                 : '';
-
+            const clss_clr = prsn.sex === 'M'
+                ? 'person--male'
+                : 'person--female';
             return `
             <button
-                class='person ${prsn.sex === 'M' ? '--male' : '--female'}'
+                class='person ${clss_clr}'
                 data-id='${prsn.id}'
                 popovertarget='id_form_edit_person'
             >
@@ -203,11 +209,20 @@ const rebuild = (() => {
         };
 
         const renderPartner = prsn => {
-            return `
-                <div class='partner'>
-                    ${renderPerson(prsn)}
-                </div>
-                `;
+            const grp = prsn.relations?.size
+                ? `<div class='relation_group'>
+                    ${[...prsn.relations.values()].map(rels => {
+                        return `<div class='children'>
+                            ${rels.map(renderBranch).join('')}
+                        </div>`
+                    }).join('')}
+                </div>`
+                : '';
+
+            return `<div class='partner'>
+                ${renderPerson(prsn)}
+                ${grp}
+            </div>`;
         };
 
         const renderBranch = prsn => {
@@ -217,11 +232,9 @@ const rebuild = (() => {
                     const items = [
                         renderPartner(ppl.get(prtnr_id)),
                         rels.length
-                            ? `
-                            <div class='children'>
+                            ? `<div class='children'>
                                 ${rels.map(renderBranch).join('')}
-                            </div>
-                            `
+                            </div>`
                             : '',
                     ].join('')
                     return `
@@ -241,7 +254,6 @@ const rebuild = (() => {
             </div>`;
 
         };
-
         document.getElementById('id_tree').innerHTML = tree.map(renderBranch).join('');
     };
 
@@ -250,16 +262,13 @@ const rebuild = (() => {
         ppl.clear();
         buildMap(tree, ppl);
         checkFields(tree, ppl);
-        tree.sort((a, b) => {
-            return (a.dob > b.dob) ? 1 : -1
-        });
+        tree.sort(sortTree);
         buildTree(tree, ppl);
         renderTree(tree, ppl);
         changeView.searchPerson();
     };
 
 })();
-
 
 
 const escapeValue = (val, is_input = false) => {
@@ -289,9 +298,9 @@ const changeData = (() => {
         </div>
         `;
 
-    const loadEditor = prsn => {
+    const loadPersonEditor = prsn => {
         resetChanges();
-        document.querySelector('.edit_person__id').innerHTML = `ID: ${prsn.id}`;
+        document.querySelector('.edit_person__id').innerHTML = prsn.id;
         document.querySelector('.edit_person__fields_wrapper').innerHTML = [
             { name: 'id', type: 'hidden' },
             { name: 'name', type: 'text', label: 'Name:' },
@@ -381,13 +390,13 @@ const changeData = (() => {
         changeLog.set(field_name, fields[field_name]);
     };
 
-    const addRelation = () => {
+    const addPerson = () => {
         const props = {
             id: makeNewId(),
             sex: 'M',
             relation_1: getFormData()?.id,
         };
-        loadEditor(props);
+        loadPersonEditor(props);
         Object.entries(props).forEach(([key, val]) => changeLog.set(key, val));
     };
 
@@ -405,6 +414,7 @@ const changeData = (() => {
         changeLog.forEach((val, field) => prsn[field] = val);
         rebuild([...DATABASE.people.values()]);
         resetChanges();
+        EL_FORM.hidePopover();
     };
 
     const modifyStoredImages = func => {
@@ -448,9 +458,28 @@ const changeData = (() => {
         elToRemove.remove();
     };
 
+    const deletePerson = () => {
+        const del_id = getFormData()?.id;
+        DATABASE.people.delete(del_id);
+        DATABASE.people.forEach(prsn => {
+            prsn.relations?.delete(del_id);
+            (prsn.relation_1 === del_id) && (delete prsn.relation_1);
+            (prsn.relation_2 === del_id) && (delete prsn.relation_2);
+        });
+        rebuild([...DATABASE.people.values()]);
+        resetChanges();
+        EL_FORM.hidePopover();
+    };
+
+    const copyText = async ev => {
+        const txt = ev.target.innerText;
+        await navigator.clipboard.writeText(txt);
+        alert(`Text copied: ${txt}`);
+    };
+
     document.getElementById('id_tree').addEventListener('click', ev => {
         const el_person = ev.target.closest('.person');
-        el_person && loadEditor(DATABASE.people.get(el_person.dataset.id));
+        el_person && loadPersonEditor(DATABASE.people.get(el_person.dataset.id));
     });
 
     EL_FORM.addEventListener('beforetoggle', ev => {
@@ -459,12 +488,14 @@ const changeData = (() => {
     });
 
     EL_FORM.addEventListener('change', logChange);
-    document.getElementById('id_add_person').addEventListener('click', addRelation);
-    document.getElementById('id_button_add_relation').addEventListener('click', addRelation);
+    document.getElementById('id_add_person').addEventListener('click', addPerson);
+    document.getElementById('id_button_add_relation').addEventListener('click', addPerson);
+    document.querySelector('.edit_person__id').addEventListener('click', copyText);
     document.getElementById('id_button_edit_person_save').addEventListener('click', save);
     document.getElementById('id_input_add_image').addEventListener('input', addImage);
     document.querySelector('.edit_person__images').addEventListener('click', deleteImage);
     document.getElementById('id_button_edit_person_close').addEventListener('click', () => EL_FORM.hidePopover());
+    document.getElementById('id_button_delete_person').addEventListener('click', deletePerson);
 
 })();
 

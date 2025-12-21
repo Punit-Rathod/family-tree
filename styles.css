@@ -259,11 +259,11 @@ body:not(:has(#id_input_edit_mode:checked)) .edit_person__field[data-display_val
     display: none;
 }
 
-.--male {
+.person--male {
     background-color: hsl(194.74deg 53.27% 79.02% / var(--bg_opacity, 1));
 }
 
-.--female {
+.person--female {
     background-color: hsl(351 100% 86% / var(--bg_opacity, 1));
 }
 
